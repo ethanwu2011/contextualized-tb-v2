@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "artifact_schema_version": 6,
+  "cohort_report_schema_version": 2,
+  "workflow_id": "patch_endpoint_provenance",
+  "scope": "Tracked synthetic and DUA-local endpoint-provenance workflow for the corrected recorded-final-outcome cohort and its strict culture sensitivity.",
+  "submission_complete": false,
+  "endpoint": "died_failure",
+  "seed": 42,
+  "aggregate_release": {
+    "directory": "manuscript/aggregate_results",
+    "checksums": "manuscript/aggregate_results/CHECKSUMS.sha256",
+    "figure_renderer": "figures/release/render_aggregate_figures.py",
+    "claim_audit_target": "make claim-audits-dua",
+    "status": "completed disclosure-safe aggregate snapshot"
+  },
+  "known_release_gaps": [
+    "This bounded endpoint runner does not train the claim-bearing shared model. The separate DUA-local claim-audit target produces the frozen aggregate analysis reports.",
+    "The S1-S2 panels in this bounded runner are execution diagnostics. The corrected aggregate figures are rendered separately from the checksummed public JSON reports.",
+    "The died/failure artifact uses the final Patient Cases outcome, with Died or Failure as events and Cured or Completed as observed non-events. Loss to follow-up, unknown, ongoing, palliative, missing, and unclassified states remain excluded.",
+    "Laboratory values are restricted to the selected initial-regimen start, but other Patient Cases context fields lack verified measurement-time provenance and require an explicit retrospective-context limitation before claim-bearing modelling.",
+    "The archived analysis and cached figure entry points are release-gated and cannot be treated as evidence."
+  ],
+  "panels": [
+    {
+      "panel": "S1",
+      "stage": "figure_s1",
+      "producer": "figures/supp/figS1_reproducibility.py",
+      "endpoint": "died_failure",
+      "release_status": "diagnostic_scaffold_not_claim_bearing",
+      "outputs": [
+        "{output_root}/results/figures/figS1_reproducibility.pdf",
+        "{output_root}/results/figures/figS1_reproducibility.png"
+      ]
+    },
+    {
+      "panel": "S2",
+      "stage": "figure_s2",
+      "producer": "figures/supp/figS2_kselection.py",
+      "endpoint": "died_failure",
+      "release_status": "diagnostic_scaffold_not_k_selection",
+      "outputs": [
+        "{output_root}/results/figures/figS2_kselection.pdf",
+        "{output_root}/results/figures/figS2_kselection.png"
+      ]
+    }
+  ],
+  "stages": [
+    {
+      "id": "synthetic_data",
+      "modes": ["synthetic"],
+      "command": [
+        "{python}",
+        "scripts/00b_make_synthetic_data.py",
+        "--n",
+        "{synthetic_n}",
+        "--out",
+        "{synthetic_dir}",
+        "--seed",
+        "{seed}"
+      ],
+      "inputs": [],
+      "outputs": [
+        "{synthetic_dir}/TB_Portals_Patient_Cases_August_2023.csv",
+        "{synthetic_dir}/TB_Portals_Regimens_August_2023.csv",
+        "{synthetic_dir}/TB_Portals_Specimen_August_2023.csv",
+        "{synthetic_dir}/TB_Portals_Biochemistry_August_2023.csv",
+        "{synthetic_dir}/TB_Portals_DST_August_2023.csv"
+      ]
+    },
+    {
+      "id": "verify_dua_inputs",
+      "modes": ["dua"],
+      "command": ["{python}", "scripts/00_download_data.py"],
+      "inputs": [
+        "{raw_dir}/TB_Portals_Patient_Cases_August_2023.csv",
+        "{raw_dir}/TB_Portals_Regimens_August_2023.csv",
+        "{raw_dir}/TB_Portals_Specimen_August_2023.csv",
+        "{raw_dir}/TB_Portals_Biochemistry_August_2023.csv",
+        "{raw_dir}/TB_Portals_DST_August_2023.csv"
+      ],
+      "outputs": []
+    },
+    {
+      "id": "build_endpoint_matrices",
+      "modes": ["synthetic", "dua"],
+      "command": ["{python}", "scripts/05b_build_conversion_matrices.py"],
+      "inputs": [
+        "{raw_dir}/TB_Portals_Patient_Cases_August_2023.csv",
+        "{raw_dir}/TB_Portals_Regimens_August_2023.csv",
+        "{raw_dir}/TB_Portals_Biochemistry_August_2023.csv",
+        "{raw_dir}/TB_Portals_DST_August_2023.csv"
+      ],
+      "outputs": [
+        "{output_root}/data/processed/conversion_model_matrices.npz",
+        "{output_root}/data/processed/died_failure_model_matrices.npz",
+        "{output_root}/data/processed/conversion_context_meta.parquet",
+        "{output_root}/data/processed/died_failure_context_meta.parquet",
+        "{output_root}/data/processed/died_failure_cohort_report.json"
+      ]
+    },
+    {
+      "id": "figure_s1",
+      "modes": ["synthetic", "dua"],
+      "command": ["{python}", "-m", "figures.supp.figS1_reproducibility"],
+      "inputs": ["{output_root}/data/processed/died_failure_model_matrices.npz"],
+      "outputs": [
+        "{output_root}/results/figures/figS1_reproducibility.pdf",
+        "{output_root}/results/figures/figS1_reproducibility.png"
+      ]
+    },
+    {
+      "id": "figure_s2",
+      "modes": ["synthetic", "dua"],
+      "command": ["{python}", "-m", "figures.supp.figS2_kselection"],
+      "inputs": ["{output_root}/data/processed/died_failure_model_matrices.npz"],
+      "outputs": [
+        "{output_root}/results/figures/figS2_kselection.pdf",
+        "{output_root}/results/figures/figS2_kselection.png"
+      ]
+    }
+  ]
+}

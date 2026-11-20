@@ -1,0 +1,54 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.11.19"
+
+      - name: Set up Python
+        run: uv python install 3.11
+
+      - name: Install system OpenMP (LightGBM)
+        run: sudo apt-get update && sudo apt-get install -y libgomp1
+
+      - name: Create venv and install
+        run: uv sync --locked --python 3.11 --extra dev
+
+      - name: Public synthetic smoke path
+        run: uv run --locked python scripts/reproduce_synthetic.py --n 300 --epochs 50
+
+      - name: Stage and scan source-only public tree
+        run: |
+          public_dir="$(mktemp -d)"
+          trap 'rm -rf "$public_dir"' EXIT
+          bash scripts/sync_to_public.sh "$public_dir"
+          bash scripts/scan_public.sh "$public_dir"
+
+      - name: Lint (ruff)
+        run: |
+          uv run --locked ruff check src tests
+          uv run --locked ruff format --check src tests
+          uv run --locked python -m compileall -q src scripts figures
+
+      - name: Type-check (mypy --strict)
+        run: uv run --locked mypy
+
+      - name: Tests + coverage
+        run: |
+          uv run --locked pytest --cov=ctb --cov-report=term-missing \
+            --cov-fail-under=0 -q
+          # Hard gate: outcome derivation must stay fully covered.
+          uv run --locked pytest tests/test_outcomes.py \
+            --cov=ctb.data.outcomes --cov-fail-under=95 -q

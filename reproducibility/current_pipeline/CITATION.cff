@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use PATCH, please cite the manuscript and this software."
+title: "PATCH Patient-specific Archetypal Treatment-effect Contextualization of Heterogeneity"
+abstract: >-
+  PATCH is an interpretable contextualized machine-learning framework that estimates a
+  context-conditioned treatment-response coefficient model for each episode by factoring the
+  coefficient map through a small set of shared archetypes, applied here to drug-response
+  heterogeneity in tuberculosis (NIH TB Portals).
+authors:
+  - family-names: Wu
+    given-names: Ethan
+    affiliation: "Medical Scientist Training Program, University of Pittsburgh School of Medicine"
+  - family-names: Lengerich
+    given-names: Benjamin J.
+  - family-names: Ellington
+    given-names: Caleb N.
+  - family-names: Xing
+    given-names: Eric P.
+keywords:
+  - contextualized machine learning
+  - treatment-response heterogeneity
+  - tuberculosis
+  - interpretable machine learning
+  - precision medicine
+license: MIT
+repository-code: "https://github.com/ethanwu2011/contextualized-tb-v2"
+version: "0.2.0"
+date-released: "2026-08-27"

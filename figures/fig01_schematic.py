@@ -1,0 +1,255 @@
+"""Figure 1, the PATCH method schematic (SPICEMIX-style conceptual overview).
+
+A single left-to-right argument: (a) a patient as multimodal context C + regimen X, (b) the
+archetype factorization Z(C)=softmax(M.C+q) onto K=5 archetypes and beta(C)=Z(C).A, (c) the patient's
+context-conditioned coefficient vector feeding the logistic outcome, (d) the cohort resolving into five
+treatment-response subtypes. Authored from vector primitives, fully on-palette, emitted as PDF/SVG/PNG.
+
+Run: ``uv run python -m figures.fig01_schematic``
+"""
+
+from __future__ import annotations
+
+import sys
+
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.patches import Circle, FancyArrowPatch, FancyBboxPatch
+
+from ctb.config import FIGURES_DIR
+from figures.palette import (
+    DIVERGING_CMAP,
+    DIVERGING_POLES,
+    MODALITY_COLORS,
+    NARRATIVE_ORDER,
+    subtype_color,
+)
+from figures.panels import save_figure
+from figures.style import mm, set_style
+
+FIG_DIR = FIGURES_DIR
+INK = "#222222"
+# Archetype/subtype slots use the canonical subtype colours in narrative order (responders, then
+# failures), so the archetype nodes (b) and the subtype clusters (d) are colour-consistent.
+ARCH = [subtype_color(i) for i in NARRATIVE_ORDER]
+BOX = (0.10, 0.83)  # (y0, height) shared by all four stage containers
+
+# Real feature count per modality (results/tables/multimodal_modality_attribution.csv, n_features).
+# Keyed to match MODALITY_COLORS; these 8 modalities total 333 features, +2 "other" = 335.
+MODALITY_NFEAT = {
+    "resistance": 134, "sociodemographic": 22, "region": 13, "burden_clinical": 21,
+    "imaging": 23, "comorbidity": 30, "genomics": 85, "labs": 5,
+}
+
+# Cohort prevalence (share of n=10,653) per subtype, in NARRATIVE_ORDER [S0, S2, S4, S1, S3].
+# From per-subtype n in results/tables/multimodal_subtype_characterization.csv:
+#   S0 2771, S2 2231, S4 1659, S1 2036, S3 1956  ->  fractions below.
+COHORT_N = 10653
+PREVALENCE = [0.260, 0.209, 0.156, 0.191, 0.184]  # sums ~1.0 across the 5 clusters
+# Per-subtype UNFAVORABLE-OUTCOME rate (NOT prevalence), same NARRATIVE_ORDER as PREVALENCE.
+UNFAV_PCT = [4.5, 4.6, 8.0, 34.0, 34.9]
+# Short, canonical tags in narrative order [S0, S2, S4, S1, S3]. Full labels are defined once in
+# figures.palette.SUBTYPES and are used by the data-driven figures.
+SUBTYPE_TAG = ["drug-sensitive responders", "mixed-spectrum resistance responders", "MDR-predominant responders",
+               "high-burden / regional failure", "HIV-enriched severe-resistance failure"]
+
+
+def _rbox(ax, x, y, w, h, fc="white", ec=INK, lw=0.8, rounding=0.02, alpha=1.0):
+    ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle=f"round,pad=0,rounding_size={rounding}",
+                                linewidth=lw, edgecolor=ec, facecolor=fc, alpha=alpha, zorder=2))
+
+
+def _container(ax, x0, title):
+    _rbox(ax, x0 - 0.02, BOX[0], 1.04, BOX[1], fc="#FAFAFA")
+    ax.text(x0 + 0.5, 0.885, title, ha="center", fontsize=7.5, fontweight="bold")
+
+
+def _arrow(ax, x0, y0, x1, y1, lw=1.2, color=INK):
+    ax.add_patch(FancyArrowPatch((x0, y0), (x1, y1), arrowstyle="-|>", mutation_scale=10,
+                                 lw=lw, color=color, zorder=6, shrinkA=0, shrinkB=0))
+
+
+def _stage_a(ax, x0):
+    _container(ax, x0, "A patient in context")
+    mods = list(MODALITY_COLORS.items())
+    n = len(mods)
+    top, h = 0.84, 0.40
+    bw = h / n
+    # Bar length encodes the real number of features in each modality (from
+    # results/tables/multimodal_modality_attribution.csv); the 8 modalities here sum to 333
+    # features, plus 2 "other" -> 335 total. No decorative random lengths.
+    fmax = max(MODALITY_NFEAT.values())
+    for i, (name, col) in enumerate(mods):
+        yy = top - (i + 1) * bw
+        frac = MODALITY_NFEAT[name] / fmax
+        ax.add_patch(plt.Rectangle((x0 + 0.34, yy), 0.58, bw * 0.74, fill=False, ec="#DDDDDD",
+                                   lw=0.3, zorder=3))
+        ax.add_patch(plt.Rectangle((x0 + 0.34, yy), 0.58 * frac, bw * 0.74, color=col, ec="white",
+                                   lw=0.3, zorder=4))
+        ax.text(x0 + 0.31, yy + bw * 0.37, name.replace("_", "/"), ha="right", va="center",
+                fontsize=5.0, color=INK)
+    ax.text(x0 + 0.5, 0.42, "bar length = # features per modality", ha="center", va="center",
+            fontsize=5.0, style="italic", color="#999999")
+    ax.text(x0 + 0.5, 0.385, "context C  ·  335 features × 8 modalities", ha="center", fontsize=5.0,
+            style="italic", color="#555555")
+    chips = ["H", "R", "Z", "E", "Lfx", "Bdq", "Lzd", "Cfz"]
+    cx = x0 + 0.045
+    for i, d in enumerate(chips):
+        on = i in (1, 4, 5, 6)
+        _rbox(ax, cx + i * 0.115, 0.215, 0.095, 0.085,
+              fc=subtype_color(2) if on else "#ECECEC", ec="#BBBBBB", lw=0.4, rounding=0.03)
+        ax.text(cx + i * 0.115 + 0.047, 0.257, d, ha="center", va="center", fontsize=5.0,
+                color="white" if on else "#666666")
+    ax.text(x0 + 0.5, 0.165, "regimen X  ·  26 drug indicators", ha="center", fontsize=5.0,
+            style="italic", color="#555555")
+
+
+def _stage_b(ax, x0):
+    _container(ax, x0, "Archetype factorization")
+    ax.text(x0 + 0.5, 0.815, r"$Z(C)=\mathrm{softmax}(M\cdot C+q)$", ha="center", fontsize=6.4)
+    ax.text(x0 + 0.5, 0.770, "K = 5 archetypes", ha="center", fontsize=5.0, style="italic",
+            color="#888888")
+    cx, cy, R = x0 + 0.5, 0.485, 0.150
+    pts = []
+    for k in range(5):
+        ang = np.pi / 2 + 2 * np.pi * k / 5
+        pts.append((cx + R * np.cos(ang), cy + R * np.sin(ang)))
+    w = np.array([0.46, 0.10, 0.08, 0.12, 0.24])
+    mx = sum(wi * p[0] for wi, p in zip(w, pts, strict=True))
+    my = sum(wi * p[1] for wi, p in zip(w, pts, strict=True))
+    for k, (px, py) in enumerate(pts):
+        ax.plot([mx, px], [my, py], color=ARCH[k], lw=0.5 + 6 * w[k], alpha=0.6,
+                zorder=3, solid_capstyle="round")
+    # Key the archetype nodes to the named subtypes (same colours as panel d's clusters).
+    for k, (px, py) in enumerate(pts):
+        ax.add_patch(Circle((px, py), 0.046, facecolor=ARCH[k], ec="white", lw=0.8,
+                            zorder=6))
+        ax.text(px, py, f"A{k}", ha="center", va="center", fontsize=5.0, color="white",
+                fontweight="bold", zorder=7)
+        # Short subtype tag just outside each node, anchored so each label grows radially AWAY from
+        # the node (left tags right-aligned, right tags left-aligned) and never runs back over a
+        # node, its neighbour, or the container edge at >=5pt.
+        ux, uy = (px - cx) / R, (py - cy) / R
+        lr = 0.062
+        tx, ty = px + lr * ux, py + lr * uy
+        tha = "center" if abs(ux) < 0.25 else ("left" if ux > 0 else "right")
+        tva = "center" if abs(uy) < 0.25 else ("bottom" if uy > 0 else "top")
+        ax.text(tx, ty, SUBTYPE_TAG[k], ha=tha, va=tva, fontsize=5.0, color="#555555",
+                zorder=7)
+    ax.add_patch(Circle((mx, my), 0.020, facecolor="white", ec=INK, lw=0.9, zorder=8))
+    # Leader to the bottom-centre whitespace between A2 (lower-left) and A3 (lower-right), clear of
+    # every node and its tag.
+    ax.annotate("this patient", xy=(mx, my), xytext=(cx, cy - 0.235),
+                fontsize=5.0, color=INK, va="center", ha="center", zorder=9,
+                arrowprops=dict(arrowstyle="-", lw=0.5, color="#888888"))
+    ax.text(x0 + 0.5, 0.215, "edge width = membership weight Z(C)", ha="center",
+            fontsize=5.0, style="italic", color="#999999")
+    ax.text(x0 + 0.5, 0.165, r"$\beta(C)=Z(C)\cdot A$  ·  context-conditioned drug coefficients", ha="center",
+            fontsize=5.4, color="#555555")
+
+
+def _stage_c(ax, x0):
+    _container(ax, x0, "Context-conditioned coefficient")
+    rng = np.random.default_rng(7)
+    vals = rng.normal(0, 1, 10)
+    vals[1] = -2.1
+    norm = plt.Normalize(-2.4, 2.4)
+    x = x0 + 0.17
+    sw = 0.066  # per-cell horizontal step
+    for i, v in enumerate(vals):
+        ax.add_patch(plt.Rectangle((x + i * sw, 0.700), 0.060, 0.115, color=DIVERGING_CMAP(norm(v)),
+                                   ec="white", lw=0.4, zorder=4))
+    ax.text(x0 + 0.5, 0.855, r"$\beta(C)$ : context-conditioned coefficient vector", ha="center", fontsize=5.8)
+    # Thin diverging colorbar (sign + magnitude scale for the strip above), with ticks and the
+    # canonical pole labels from palette.DIVERGING_POLES below the bar.
+    cb_x0, cb_x1, cb_y, cb_h = x, x + 9 * sw + 0.060, 0.640, 0.024
+    ng = 60
+    cw = (cb_x1 - cb_x0) / ng
+    for g in range(ng):
+        cv = norm.vmin + (g + 0.5) / ng * (norm.vmax - norm.vmin)
+        ax.add_patch(plt.Rectangle((cb_x0 + g * cw, cb_y), cw + 0.001, cb_h,
+                                   color=DIVERGING_CMAP(norm(cv)), ec="none", zorder=4))
+    ax.add_patch(plt.Rectangle((cb_x0, cb_y), cb_x1 - cb_x0, cb_h, fill=False, ec="#888888",
+                               lw=0.4, zorder=5))
+    cb_mid = 0.5 * (cb_x0 + cb_x1)
+    for xt, lab in ((cb_x0, "-2.4"), (cb_mid, "0"), (cb_x1, "+2.4")):
+        ax.plot([xt, xt], [cb_y, cb_y - 0.011], color="#888888", lw=0.4, zorder=5)
+        ax.text(xt, cb_y - 0.016, lab, ha="center", va="top", fontsize=5.0, color="#555555")
+    ax.text(x0 + 0.5, cb_y - 0.046, r"$\Delta\beta$ (log-odds per drug)", ha="center", va="top",
+            fontsize=5.0, color="#555555")
+    # Both canonical pole labels are too long to sit side-by-side under the narrow bar at >=5pt,
+    # so stack them on two lines (left pole under the left end, right pole on the line below).
+    ax.text(cb_x0, cb_y - 0.076, DIVERGING_POLES[0], ha="left", va="top", fontsize=5.0,
+            color="#777777")
+    ax.text(cb_x1, cb_y - 0.099, DIVERGING_POLES[1], ha="right", va="top", fontsize=5.0,
+            color="#777777")
+    # Sigmoid with minimal labelled axes: x = linear predictor (log-odds), y = P(unfavorable).
+    xs = np.linspace(-4, 4, 80)
+    ys = 1 / (1 + np.exp(-xs))
+    axx0, axy0, axw, axh = x0 + 0.30, 0.310, 0.46, 0.150
+    ax.plot([axx0, axx0], [axy0, axy0 + axh], color="#888888", lw=0.5, zorder=4)
+    ax.plot([axx0, axx0 + axw], [axy0, axy0], color="#888888", lw=0.5, zorder=4)
+    ax.plot(axx0 + (xs + 4) / 8 * axw, axy0 + ys * axh, color=INK, lw=1.1, zorder=5)
+    ax.text(axx0 - 0.018, axy0, "0", ha="right", va="center", fontsize=5.0, color="#555555")
+    ax.text(axx0 - 0.018, axy0 + axh, "1", ha="right", va="center", fontsize=5.0, color="#555555")
+    ax.text(axx0 - 0.062, axy0 + axh / 2, "P(unfavorable)", ha="center", va="center",
+            rotation=90, fontsize=5.0, color="#555555")
+    ax.text(axx0 + axw / 2, axy0 - 0.034, r"$X\cdot\beta(C)+\mu(C)$  (log-odds)", ha="center",
+            va="top", fontsize=5.0, color="#555555")
+    ax.text(x0 + 0.5, 0.170, r"$\mathrm{logodds}(Y)=X\cdot\beta(C)+\mu(C)$", ha="center",
+            fontsize=5.6, color="#333333")
+
+
+def _stage_d(ax, x0):
+    _container(ax, x0, "Five subtypes")
+    rng = np.random.default_rng(11)
+    centers = [(x0 + 0.27, 0.74), (x0 + 0.73, 0.74), (x0 + 0.50, 0.555),
+               (x0 + 0.30, 0.40), (x0 + 0.70, 0.40)]
+    # Two-line labels make the quantity explicit: percentage = UNFAVORABLE-OUTCOME RATE, not
+    # prevalence. Point count per cluster encodes true cohort prevalence (PREVALENCE), so equal
+    # visual mass no longer falsely implies equal subtype size.
+    offs = [0.060, 0.060, 0.060, -0.060, -0.060]  # label above (top row) / below (bottom row)
+    for k, (cxk, cyk) in enumerate(centers):
+        npts = max(6, round(PREVALENCE[k] * 90))
+        pts = rng.normal([cxk, cyk], 0.030, size=(npts, 2))
+        ax.scatter(pts[:, 0], pts[:, 1], s=2.6, color=ARCH[k], alpha=0.85,
+                   edgecolors="none", zorder=4, rasterized=True)
+        oy = offs[k]
+        label = f"{SUBTYPE_TAG[k]}\n{UNFAV_PCT[k]:.1f}% fail"
+        ax.text(cxk, cyk + oy, label, ha="center",
+                va="bottom" if oy > 0 else "top", fontsize=5.0, color=INK, linespacing=1.1)
+    ax.text(x0 + 0.5, 0.225, "% = unfavorable-outcome rate", ha="center",
+            fontsize=5.0, style="italic", color="#999999")
+    ax.text(x0 + 0.5, 0.185, "point density tracks prevalence", ha="center",
+            fontsize=5.0, style="italic", color="#999999")
+    ax.text(x0 + 0.5, 0.145, f"n = {COHORT_N:,} patients", ha="center", fontsize=5.2,
+            color="#555555")
+
+
+def main() -> int:
+    set_style()
+    fig = plt.figure(figsize=(mm(180), mm(60)))
+    ax = fig.add_axes([0, 0, 1, 1])
+    ax.set_xlim(0, 4.3)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
+
+    xs = [0.05, 1.13, 2.21, 3.25]
+    _stage_a(ax, xs[0])
+    _stage_b(ax, xs[1])
+    _stage_c(ax, xs[2])
+    _stage_d(ax, xs[3])
+    for xi in xs[:-1]:
+        _arrow(ax, xi + 1.035, 0.52, xi + 1.105, 0.52)
+    for letter, xi in zip("abcd", xs, strict=True):
+        ax.text(xi - 0.04, 0.995, letter, fontsize=9, fontweight="bold", va="top", ha="left")
+
+    FIG_DIR.mkdir(parents=True, exist_ok=True)
+    fig.savefig(FIG_DIR / "fig01_patch_schematic.svg")
+    pdf, png = save_figure(fig, "fig01_patch_schematic", FIG_DIR)
+    print(f"wrote {pdf.name}, {png.name}, fig01_patch_schematic.svg")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

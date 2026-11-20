@@ -1,0 +1,114 @@
+{
+  "baselines": {
+    "logistic_C": 0.1,
+    "max_iter": 2000,
+    "models": [
+      "C_only",
+      "X_only",
+      "concatenated_C_X"
+    ],
+    "penalty": "l2",
+    "solver": "lbfgs",
+    "tuning": "none; same governed penalty fixed before run"
+  },
+  "bootstrap": {
+    "resamples": 1000,
+    "seed": 20261024,
+    "statistic": "Mean within-repeat OOF AUROC; same resampled patient multiplicities applied to every model and repeat. Paired AUROC differences. Percentile95%CI conditional on these fitted models; seed spread reported separately, no independence assumption across repeated patients.",
+    "unit": "patient"
+  },
+  "conditional_secondary_claim_rule": "Canonical shared_patch must have mean AUROC greater than each C-only/X-only/concatenated, paired patient-bootstrap95%CI lower bound >0 against each, and higher AUROC in >=4/5 repeated CV seeds. Do not change endpoint, architecture, budget, seeds or penalty after viewing results. Day60 reported regardless of ranking and any discordance stated.",
+  "context_time_contract": "Raw context preserves degenerate columns. Recorded laboratory values restricted to validated initial regimen start; other registry covariates lack verified individual timestamps. No claim all covariates verified pretreatment.",
+  "driver_sha256": "3fe46c55135465d57f9cca222d14af03d3d5379cd1b11d3779d5e700c97a2385",
+  "endpoint_order": [
+    "death_failure",
+    "observed_conversion",
+    "day60_negative"
+  ],
+  "folds": 5,
+  "historical_recipe_sensitivity": {
+    "K": 5,
+    "applies_to": "observed_conversion only; not eligible to replace shared_patch for the conditional manuscript claim",
+    "archetype_full_tensor_mean_l1": 0.0005,
+    "entropy_weight": 0.0,
+    "lr": 0.01,
+    "same_initialization_seed_rule": true,
+    "updates": 2000,
+    "weight_decay": 0.001
+  },
+  "initialization_sensitivity": "Death/failure only: also fit seeds0,1,2,3 on fixed seed42 folds to distinguish optimization variation. Seed42 result shared with repeated CV. No best-seed selection.",
+  "locked_before_clinical_fits_utc": "2026-10-24T17:55:52.744972+00:00",
+  "manuscript_policy": "Exact original PATCH_Final_V3_EW.docx unchanged until results support a narrow tracked correction. Death/failure remains primary. No broad prose/clinical narrative/figure rearrangement changes.",
+  "metrics": [
+    "AUROC",
+    "AUPRC",
+    "Brier",
+    "log_loss"
+  ],
+  "preprocessing": "Fit numeric imputation/scaling, categorical vocabulary/drop rules, and >=1% regimen vocabulary within each training fold. No global encoding or feature prevalence filtering. Same train/test matrices all models.",
+  "primary": "death_failure: recorded Died/Failure versus Cured/Completed; all other final outcomes excluded. No culture requirement.",
+  "privacy": "All patient-derived objects remain local and in memory. No IDs, labels, predictions, clinical values, coefficient/embedding/latent arrays serialized. Only aggregate endpoint/seed metrics and cohort counts>=30; failure logs contain no messages or locals.",
+  "raw_sha256": {
+    "TB_Portals_Biochemistry_August_2023.csv": "fe6690ec5e1c07e0da35616dafc2e7f819267346524ec73c7c77bab9b3aacc61",
+    "TB_Portals_DST_August_2023.csv": "da38bfa95637e5d9a3d9105d80f5d2798613c8b7f49e7dc67bac8d29fc3fdc0a",
+    "TB_Portals_Patient_Cases_August_2023.csv": "8a4aacc5dc15743932d55eae72b27a41fc8404b2b4bb6bed19e3796ae33283db",
+    "TB_Portals_Regimens_August_2023.csv": "9ae4554beacaa5829186b1ebcff79aa57e11cec92d81460e9a53f6178cb26699"
+  },
+  "repeated_cv_seeds": [
+    42,
+    0,
+    1,
+    2,
+    3
+  ],
+  "reporting": "Report each seed and descriptive mean, median, range. Mean AUROC across repeats, not best seed, pooled repeated rows or prediction ensemble.",
+  "secondary": "observed_conversion: governed CONSORT, first observed positive culture <= day 0; first subsequent negative with no later recorded positive. Current integral-day parsing and whole-condition quarantine of conflicting same-day statuses. 0=censored/no recorded sustained conversion, not confirmed biological nonconversion. No two-negative confirmation; variable follow-up. New validation, not identical-label historical replay.",
+  "secondary_fixed_horizon_sensitivity": "day60_negative: same baseline-positive eligibility, observed culture nearest day60 in inclusive45-75 window; equal distance chooses earlier day. Exclude missing window culture, do not code it0. Status1=negative,0=positive. Observed microbiological status, not WHO-confirmed conversion or cure.",
+  "shared_patch": {
+    "K": 5,
+    "archetype_full_tensor_mean_l1": 0.0005,
+    "entropy_weight": 1.0,
+    "lr": 0.01,
+    "seed_rule": "_seed(initialization_seed,zero_based_fold,4); set before initialization and training",
+    "simplex": true,
+    "updates": 500,
+    "weight_decay": 0.001
+  },
+  "source_sha256": {
+    "src/ctb/__init__.py": "9ca929b580d8820fef4b3b8a2f59b2b68f0ae2b046550649795df1d1f9c33b9e",
+    "src/ctb/config.py": "28495678f8b56aeccf0c2c9ec87d8ab29b5a1cf604563f301eed035e9250a436",
+    "src/ctb/data/__init__.py": "50e565e4401e7cf6ce19d57f5a6fe3c7a0f08a7826883ccee561178db9edbade",
+    "src/ctb/data/artifacts.py": "f6fe2ab7d135e3ae087c5a001773f5dac8c5c63297276d6bd8eb801227ab6f75",
+    "src/ctb/data/clean.py": "2eb396cb063efe4d10d6dd139dd2549c6aab950fcce3a464e6c98f1a7e2d60a7",
+    "src/ctb/data/context.py": "cad314a239187ac2430c886eb68384a5643403006336c19dd339bb15de9bd92b",
+    "src/ctb/data/conversion.py": "9b1c7436b5e6cac71120d508f604621d55aeb6a3cfcc93187418460ad12e3356",
+    "src/ctb/data/load.py": "bbb3f295fdfc3cfb3b637e1d33d4979d80185f6877ea95a369756ad137211ab2",
+    "src/ctb/data/model_matrices.py": "46ed8b623b891af46884ac5eac59d769feb293e160118356929147214e180140",
+    "src/ctb/data/outcomes.py": "36e29ab9b7b9551fbc8a12b67e5a8c5f7a8fba3921920e2745ea471cc9610555",
+    "src/ctb/data/temporal.py": "06835812fb95722fc20bc2c5548b1470b4d2867b9885119f3ab2e8b6c6751222",
+    "src/ctb/data/treatments.py": "90a6dcca27f4ef83da388e87c0437831b4261cfc87dc12da3b6f3a887ca1c288",
+    "src/ctb/models/__init__.py": "27a570e6a61b1621695f887f4df7da7861bb8a21194afa51c2980c0ca67475ff",
+    "src/ctb/models/archetype_contextualized.py": "440cfd6a18e3b9e7793f73812185954f0359c7833ccd2ab0e945d3a7cbfe61de",
+    "src/ctb/models/archetypes.py": "70d9a893853ba41ce6923eeeb7ee6893f368c6e66340b5a2fab101865dc7894b",
+    "src/ctb/models/baselines.py": "482714f18434d9d523787d379ed1e933bbe07429ceb8e665a24aabf356683ad2",
+    "src/ctb/models/contextualized.py": "9e1b8fcf6f764e87510e45a6e803d7b0985bca2daf21f029fd7ec00af6e6db52",
+    "src/ctb/models/contextualized_torch.py": "948f64f63ad8d2011095a9454aab3245850fcf7714ee343f2506cb9812dbeac7",
+    "src/ctb/models/evaluation.py": "b09bea1f7001f51872f5300b541a7589db007c1083274b7210acd4d41ada61be",
+    "src/ctb/models/fold_preprocessing.py": "58037ab93e409d64189b3d9b33634349ae58d93453ed1bbd2ce5d377de46e0db",
+    "src/ctb/models/locked_validation.py": "3ac91b067d62e55daa623ded4087d9134ac81df7e59edf60574cf32ffc612a4e",
+    "src/ctb/models/profile_stability.py": "948b64a939616212b3918beece1a0745e1596dea0f39636f5b1aa54334b63127",
+    "src/ctb/models/residual_archetype.py": "88f297f0dbaafd8c97032f3707228c6a16fd12eb25bc97cb696350bf919f8593",
+    "src/ctb/models/residual_simulation.py": "74317b633e764606ddcf8c3a785e047cfda782ec663021c597b3dc9f4a9a4e56",
+    "src/ctb/release_gates.py": "270b6446abae30b3b8b72b14b01da15ca0343874f6b6a50a7992acc0ab0e4f88",
+    "src/ctb/utils/__init__.py": "60de436412893171f4babb3ff6554138fc01abc94ff168fc01dc9945ec87174d",
+    "src/ctb/utils/logging.py": "451a49c81109c4ef4f9af76f9a31a37ed0a24a818bfecd03b538061e95cb258b",
+    "src/ctb/utils/reproducibility.py": "6c6cd184b587461f87fb09ab775b947cea92c64d68a534a590c39ef6067b938b",
+    "src/ctb/viz/__init__.py": "67b99abd4a4646db5d83ca4f3717b93c9dd0a5ec1fcb90bb083cfab0f26de8b2",
+    "src/ctb/viz/archetype_figures.py": "deb9cd7321aabea3b97ba6ff070b4c2df63f9707ccb5c2dcd52fad8ebbd0852c",
+    "src/ctb/viz/contextualized_figures.py": "fc367d3abb25275f7995c3205b6b3c7f43d059ffa2996ee7a39b7f7c489df843",
+    "src/ctb/viz/figures.py": "5af3eea54ba47ef323849664f8fc072873b2816ed505dc689198fab097eef420",
+    "src/ctb/viz/style.py": "8e8bebb0629e5200ba400da8eb37c5a5e7167ac68ae9babb280a99b9210400f7"
+  },
+  "split_method": "StratifiedGroupKFold, patient grouped; all models same folds each repeat. Each repeat jointly changes fold seed and PATCH initialization seed.",
+  "unevaluable_policy": "If either class or total patient count <30, suppress counts and report endpoint not evaluable; do not modify eligibility, seeds, folds or models."
+}

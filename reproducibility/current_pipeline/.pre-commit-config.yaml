@@ -1,0 +1,35 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.1
+    hooks:
+      - id: ruff
+        args: [--fix]
+        files: ^(src|tests|scripts|figures/release)/
+      - id: ruff-format
+        files: ^(src|tests|scripts|figures/release)/
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-yaml
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: check-merge-conflict
+      - id: detect-private-key
+
+  - repo: local
+    hooks:
+      - id: no-data-commit
+        name: block committing common data artifact formats
+        entry: Refuse common table/matrix/database data artifacts (NIH TB Portals DUA)
+        language: fail
+        exclude: '^(PATCH_EW_Minimal_Verified_2026\-10\-24/figures/historical/aggregates/Supplementary_Data_2_historical_triage\.csv|PATCH_EW_Minimal_Verified_2026\-10\-24/figures/historical/aggregates/drug_global_ranking_release\.csv|PATCH_EW_Minimal_Verified_2026\-10\-24/figures/historical/aggregates/entropy_profiles_release\.csv|PATCH_EW_Minimal_Verified_2026\-10\-24/figures/historical/aggregates/entropy_summary_release\.csv|PATCH_EW_Minimal_Verified_2026\-10\-24/figures/historical/aggregates/legacy_atlas_supported\.csv|PATCH_EW_Minimal_Verified_2026\-10\-24/figures/historical/aggregates/legacy_decomposition\.csv|PATCH_EW_Minimal_Verified_2026\-10\-24/figures/historical/aggregates/legacy_model_cells\.csv|PATCH_EW_Minimal_Verified_2026\-10\-24/figures/historical/aggregates/rifampicin_receipt_release\.csv|PATCH_EW_Minimal_Verified_2026\-10\-24/figures/historical/source_data/effect_recovery_benchmark\.csv|PATCH_EW_Minimal_Verified_2026\-10\-24/figures/historical/source_data/enrichment_permutation_null\.csv|PATCH_EW_Minimal_Verified_2026\-10\-24/figures/historical/source_data/profile_stability_null\.csv|PATCH_EW_Minimal_Verified_2026\-10\-24/legacy_verified/aggregates/effect_recovery_benchmark\.csv|PATCH_EW_Minimal_Verified_2026\-10\-24/legacy_verified/aggregates/enrichment_permutation_null\.csv|PATCH_EW_Minimal_Verified_2026\-10\-24/legacy_verified/aggregates/profile_stability_null\.csv|manuscript/source_data/Supplementary_Data_1_seed_metrics\.csv|manuscript/source_data/Supplementary_Data_2_historical_triage\.csv|performance/PATCH_two_endpoint_reviewer_reproducibility\.zip)$'
+        files: '.*\.(csv|tsv|jsonl|ndjson|xls|xlsx|parquet|feather|arrow|orc|npz|npy|h5|hdf5|sqlite|sqlite3|db|dbf|dbc|rds|dta|sav|pkl|pickle|joblib|pt|pth|onnx|safetensors|zip|tar|tgz|gz)$'
+      - id: no-unreviewed-rendered-artifacts
+        name: block rendered artifacts outside the disclosure-reviewed release folders
+        entry: Refuse rendered or packaged artifacts outside manuscript/figures
+        language: fail
+        files: '.*\.(png|jpg|jpeg|pdf|svg|html|pptx)$'
+        exclude: '^(manuscript/figures/|figures/palette_swatch\.png$)'

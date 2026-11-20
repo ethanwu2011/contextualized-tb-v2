@@ -1,0 +1,51 @@
+# Data — NEVER commit (NIH TB Portals DUA)
+data/raw/
+data/interim/
+data/processed/
+*.csv
+*.parquet
+*.feather
+# Generated figures, tables, and metrics may be derived from restricted patient-level data.
+# Keep the entire results tree out of commits. Rebuild it locally or add a separately reviewed
+# aggregate release artifact after disclosure review.
+results/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.uv/
+
+# Tooling
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Notebooks
+notebooks/
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Logs / models
+logs/
+*.log
+models/*.pkl
+models/*.joblib
+
+# PyTorch Lightning training artifacts
+lightning_logs/
+
+# Palette preview written by figures/_swatch.py. Static figures stay out of the source release.
+figures/palette_swatch.png
