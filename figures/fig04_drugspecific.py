@@ -44,7 +44,7 @@ NAMES = [subtype_name(i) for i in NARRATIVE_ORDER]
 COLORS = [subtype_color(i) for i in NARRATIVE_ORDER]
 
 ATLAS_MAX_ROWS = 34     # cap on contexts shown in the main-figure atlas for legibility (full set: Fig. S5)
-ATLAS_N_BOOT = 40       # resamples behind the atlas significance test (percentile, BH-FDR)
+ATLAS_N_BOOT = 40       # resamples behind the atlas screen (percentile interval, unadjusted)
 
 # Clean display labels for the drug-token axis. Standard WHO TB-drug abbreviations are kept; the two
 # non-WHO / programmatic tokens are normalised so no snake_case or misspelling reaches the figure.

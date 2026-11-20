@@ -1,0 +1,24 @@
+subtype,subtype_short,drug,direction,dbeta,p,category,concordant,confidence,reference,source_note
+Drug-sensitive responders,DS,rifampicin,more favorable,-0.431,0.000,confirmed,agree,high,Nahid 2016 (PMID 27516382),
+Severe-resistant / HIV,SR-HIV,rifampicin,less favorable,0.185,0.016,confirmed,agree,high,Nahid 2019 (PMID 31729908),
+Drug-sensitive responders,DS,isoniazid,more favorable,-0.182,0.005,confirmed,agree,high,Nahid 2016 (PMID 27516382),
+Drug-sensitive responders,DS,ethambutol,more favorable,-0.167,0.005,confirmed,agree,high,Nahid 2016 (PMID 27516382),
+Severe-resistant / HIV,SR-HIV,pyrazinamide,less favorable,0.156,0.017,confirmed,agree,moderate,Nahid 2019 (PMID 31729908),
+Severe-resistant / HIV,SR-HIV,cycloserine,less favorable,0.151,0.034,discordant,disagree,moderate,Nahid 2019 (PMID 31729908),source reports benefit
+High-burden / regional,HB,pyrazinamide,less favorable,0.146,0.027,novel,mixed,low,Horsburgh 2015 (PMID 26605929),
+High-burden / regional,HB,ethambutol,less favorable,0.142,0.038,novel,none,low,,no directly comparable source found
+High-burden / regional,HB,ethionamide,more favorable,-0.119,0.040,novel,mixed,low,Ahmad 2018 (PMID 30215381),
+High-burden / regional,HB,kanamycin,more favorable,-0.110,0.019,discordant,disagree,moderate,Cegielski 2021 (PMID 33124668),
+Severe-resistant / HIV,SR-HIV,terizidone,more favorable,-0.106,0.004,novel,agree-partial,low,van der Walt 2020 (PMID 33046491),
+High-burden / regional,HB,ofloxacin,more favorable,-0.104,0.015,confirmed,agree,moderate,Nahid 2019 (PMID 31729908),
+High-burden / regional,HB,other second-line,more favorable,-0.100,0.006,novel,agree-general,low,Ahmad 2018 (PMID 30215381),
+Severe-resistant / HIV,SR-HIV,ofloxacin,more favorable,-0.099,0.024,confirmed,agree,moderate,Nahid 2019 (PMID 31729908),
+High-burden / regional,HB,streptomycin,more favorable,-0.094,0.006,confirmed,agree,moderate,Cegielski 2021 (PMID 33124668),
+Drug-sensitive responders,DS,antiretroviral therapy,less favorable,0.088,0.002,confounded,confounding,moderate,Nunn 2008 (PMID 18617486),
+Severe-resistant / HIV,SR-HIV,pretomanid,more favorable,-0.088,0.010,confirmed,agree,high,Conradie 2022 ZeNix (PMID 36053506),
+Drug-sensitive responders,DS,pretomanid,less favorable,0.076,0.005,confounded,confounding,moderate,Cevik 2024 (PMID 38768617),
+Resistant responders,RR,other second-line,less favorable,0.074,0.025,novel,none,low,,no directly comparable source found
+Severe-resistant / HIV,SR-HIV,streptomycin,more favorable,-0.074,0.039,confirmed,agree,moderate,Cegielski 2021 (PMID 33124668),
+Drug-sensitive responders,DS,ofloxacin,less favorable,0.073,0.003,novel,mixed,low,Nahid 2016 (PMID 27516382),fluoroquinolone regimen inferior
+Drug-sensitive responders,DS,cotrimoxazole,less favorable,0.067,0.004,confounded,confounding,moderate,Nunn 2008 (PMID 18617486),
+Drug-sensitive responders,DS,terizidone,less favorable,0.049,0.036,novel,none,low,,no directly comparable source found

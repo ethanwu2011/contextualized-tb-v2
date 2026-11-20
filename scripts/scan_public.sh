@@ -24,13 +24,34 @@ HITS="$(find "$DIR" -type f \( \
   -o -name '*.db' -o -name '*.xls' -o -name '*.xlsx' -o -name '*.csv' -o -name '*.tsv' \
   -o -name '*.jsonl' -o -name '*.ndjson' -o -name '*.zip' -o -name '*.tar' -o -name '*.tar.gz' \
   -o -name '*.tgz' \
-\) -print 2>/dev/null)"
+\) -not -path "$DIR/.git/*" -print 2>/dev/null)"
+# Reviewed source data: a table may pass only if figures/source_data/SHA256SUMS lists its exact path
+# and its SHA-256 still matches. Anything unlisted or changed still fails.
+ALLOWLIST="$DIR/figures/source_data/SHA256SUMS"
+sha256_of() {
+  if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1" | awk '{print $1}'
+  else shasum -a 256 "$1" | awk '{print $1}'; fi
+}
+if [ -n "$HITS" ] && [ -f "$ALLOWLIST" ]; then
+  REMAIN=""
+  while IFS= read -r hit; do
+    [ -z "$hit" ] && continue
+    rel="${hit#"$DIR"/}"
+    expected="$(awk -v p="$rel" '$2 == p {print $1}' "$ALLOWLIST")"
+    if [ -n "$expected" ] && [ ! -L "$hit" ] && [ "$(sha256_of "$hit")" = "$expected" ]; then
+      note OK "reviewed source data, hash matches: $rel"
+    else
+      REMAIN="${REMAIN}${hit}"$'\n'
+    fi
+  done <<< "$HITS"
+  HITS="$(printf '%s' "$REMAIN" | sed '/^$/d')"
+fi
 if [ -n "$HITS" ]; then
   note FAIL "data-shaped files are not publishable"
   echo "$HITS"
   FAIL=1
 else
-  note OK "none"
+  note OK "no unreviewed data-shaped files"
 fi
 
 echo "== 2. symlinks =="

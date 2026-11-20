@@ -3,6 +3,8 @@ data/raw/
 data/interim/
 data/processed/
 *.csv
+# Reviewed, hash-pinned source data (see figures/source_data/README.md and SHA256SUMS).
+!figures/source_data/*.csv
 *.parquet
 *.feather
 # Generated figures, tables, and metrics may be derived from restricted patient-level data.

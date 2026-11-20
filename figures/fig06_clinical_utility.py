@@ -22,6 +22,13 @@ from matplotlib.gridspec import GridSpec
 from matplotlib.patches import Patch
 
 from ctb.config import FIGURES_DIR, TABLES_DIR
+from figures.palette import (
+    COMPARATOR_GREY,
+    COMPARATOR_LIGHT,
+    PATCH_COLOR,
+    REFERENCE_GREY,
+    RESISTANCE_CLASS_COLOR,
+)
 from figures.panels import panel_label, save_figure
 from figures.style import mm, set_style
 
@@ -29,7 +36,9 @@ FIG_DIR = FIGURES_DIR
 CURVE = TABLES_DIR / "decision_curve.csv"
 YIELD = TABLES_DIR / "decision_curve_yield.csv"
 
-C_PATCH, C_RES, C_GREY, C_DARK = "#0072B2", "#882255", "#B8B8B8", "#333333"
+# Unified palette: PATCH ink slate, resistance class in the resistance-modality wine, references grey.
+C_PATCH, C_RES, C_GREY, C_DARK = PATCH_COLOR, RESISTANCE_CLASS_COLOR, COMPARATOR_LIGHT, REFERENCE_GREY
+C_ALL = COMPARATOR_GREY  # "monitor all" bar in panel b
 
 
 def main() -> int:
@@ -47,7 +56,7 @@ def main() -> int:
 
     # --- (a) decision curve --------------------------------------------------------------------
     ax = fig.add_subplot(gs[0])
-    ax.axvspan(10, 30, color=C_PATCH, alpha=0.05, lw=0)
+    ax.axvspan(10, 30, color="#000000", alpha=0.04, lw=0)
     ax.plot(t, d["PATCH_multimodal"], color=C_PATCH, lw=2.0, label="PATCH (multimodal context)", zorder=5)
     ax.plot(t, d["resistance_class_only"], color=C_RES, lw=1.6, label="resistance class only (standard)")
     ax.plot(t, d["treat_all"], color=C_GREY, lw=1.0, ls="--", label="intervene on all")
@@ -57,7 +66,7 @@ def main() -> int:
     ax.set_xlabel("threshold risk for intensified monitoring (%)", fontsize=7)
     ax.set_ylabel("net benefit", fontsize=7)
     ax.legend(fontsize=5.8, frameon=False, loc="upper right")
-    ax.text(20, -0.007, "clinically relevant band", ha="center", va="bottom", fontsize=5.2, color=C_PATCH)
+    ax.text(20, -0.007, "clinically relevant band", ha="center", va="bottom", fontsize=5.2, color="#000000")
     ax.set_title("Multimodal risk-targeting compared with resistance-class targeting", fontsize=7.2, pad=4)
     panel_label(ax, "a", dx=-0.10, dy=1.06)
 
@@ -65,7 +74,7 @@ def main() -> int:
     axb = fig.add_subplot(gs[1])
     order = ["Monitor all", "Resistance class", "PATCH (multimodal)"]
     yld = yld.set_index("strategy").reindex(order)
-    cols = [C_DARK, C_RES, C_PATCH]
+    cols = [C_ALL, C_RES, C_PATCH]
     yy = np.arange(len(order))[::-1]
     tp = yld["true_highrisk_per_1000"].to_numpy()
     fp = yld["overmonitored_per_1000"].to_numpy()

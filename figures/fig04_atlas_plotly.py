@@ -4,7 +4,7 @@ Upgrades the flat context×drug heatmap into a dendrogram-clustered, significanc
 106 contexts and 26 drugs are each clustered (Ward) so response *modules* — blocks of contexts and
 drugs that behave alike — become adjacent and visible. Diverging blue→red on a symmetric scale about
 0 (blue = more favorable recorded association, red = less favorable); a small dot marks the 853 cells
-significant after correction, directing the eye to robust associations. Reads only the aggregate atlas
+flagged by the unadjusted bootstrap sign-stability screen (no multiplicity correction). Reads only the aggregate atlas
 table (DUA-safe).
 
 Run: ``.venv/bin/python -m figures.fig04_atlas_plotly``
@@ -100,7 +100,7 @@ def main() -> int:
                                  ticks=""))
     fig.update_layout(yaxis2=dict(domain=[0.875, 1.0], showgrid=False, zeroline=False, showline=False,
                                   showticklabels=False, ticks=""))
-    fig.add_annotation(text=f"{n_ctx} contexts × {n_drug} drugs · dot = significant (FDR) · Ward clustering",
+    fig.add_annotation(text=f"{n_ctx} contexts × {n_drug} drugs · dot = bootstrap screen (unadjusted) · Ward clustering",
                        xref="paper", yref="paper", x=0.06, y=1.005, showarrow=False,
                        font=dict(size=10.5, color=GREY), xanchor="left", yanchor="bottom")
 

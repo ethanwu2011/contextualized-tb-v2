@@ -239,22 +239,34 @@ def main() -> int:
         import matplotlib
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
-        fig, ax = plt.subplots(1, 3, figsize=(11.5, 3.6))
+        from matplotlib.ticker import NullFormatter, ScalarFormatter
+        fig, ax = plt.subplots(1, 3, figsize=(12.0, 3.8))
         p1 = summ[summ.part == 1]
         for name in p1.method.unique():
             s = p1[p1.method == name].sort_values("n_train")
-            ax[0].plot(s.n_train, s["mean"], marker="o", label=name)
-            ax[0].fill_between(s.n_train, s["mean"] - s["std"], s["mean"] + s["std"], alpha=0.15)
-        ax[0].set_xscale("log"); ax[0].set_xlabel("training patients"); ax[0].set_ylabel("$\\beta(C)$ recovery RMSE")
-        ax[0].set_title("Part 1: factorization ablation (low-rank)"); ax[0].legend(frameon=False, fontsize=7.5)
+            # PATCH in PATCH_COLOR (figures/palette.py); the comparator in grey.
+            col = "#2E3440" if str(name).startswith("PATCH") else "#8C8C8C"
+            ax[0].plot(s.n_train, s["mean"], marker="o", color=col, label=name)
+            ax[0].fill_between(s.n_train, s["mean"] - s["std"], s["mean"] + s["std"], color=col,
+                               alpha=0.15)
+        ax[0].set_xscale("log")
+        ax[0].set_xticks(sorted(p1.n_train.unique()))
+        ax[0].xaxis.set_major_formatter(ScalarFormatter())
+        ax[0].xaxis.set_minor_formatter(NullFormatter())
+        ax[0].set_xlabel("training patients"); ax[0].set_ylabel("$\\beta(C)$ recovery RMSE")
+        ax[0].set_title("Part 1: factorization ablation (low-rank)")
+        ax[0].legend(frameon=False, fontsize=7.5, loc="upper center", bbox_to_anchor=(0.5, -0.22),
+                     ncol=1)
         for k, regime in enumerate(("low-rank", "nonlinear")):
             s = summ[(summ.part == 2) & (summ.regime == regime)].sort_values("mean")
-            ax[k + 1].barh(s.method, s["mean"], xerr=s["std"], color="#6B7177")
-            ax[k + 1].set_xlabel("PEHE"); ax[k + 1].set_title(f"Part 2: CATE recovery ({regime})")
+            ax[k + 1].barh(s.method, s["mean"], xerr=s["std"],
+                           color=["#2E3440" if str(m).startswith("PATCH") else "#8C8C8C"
+                                  for m in s.method])
+            ax[k + 1].set_xlabel("PEHE"); ax[k + 1].set_title(f"Part 2: CATE recovery\n({regime})")
             ax[k + 1].invert_yaxis()
         fig.tight_layout()
         for ext in ("pdf", "png"):
-            fig.savefig(FIGURES_DIR / f"figS13_effect_recovery.{ext}", dpi=200)
+            fig.savefig(FIGURES_DIR / f"figS13_effect_recovery.{ext}", dpi=200, bbox_inches="tight")
         plt.close(fig)
     except Exception as exc:  # noqa: BLE001
         logger.warning("figure skipped: %s", exc)

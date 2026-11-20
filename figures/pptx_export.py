@@ -11,6 +11,7 @@ Run: ``.venv/bin/python -m figures.pptx_export``
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -272,6 +273,8 @@ def fig3_auroc_tiers() -> None:
 
 
 # ---- Fig 4 panel c: post hoc literature triage of the 23 significant associations ---------------
+# Hand-curated after the model fit and shipped with the code (reviewed, hash-pinned source data).
+LIT_TABLE = Path(__file__).resolve().parent / "source_data" / "fig4_literature_validation.csv"
 DRUG_FULL = {"R": "rifampicin", "H": "isoniazid", "E": "ethambutol", "Z": "pyrazinamide",
              "S": "streptomycin", "Cs": "cycloserine", "Eto": "ethionamide", "Km": "kanamycin",
              "Trd": "terizidone", "Ofx": "ofloxacin", "other_second_line": "other second-line",
@@ -298,7 +301,7 @@ def fig4_validation_heatmap() -> None:
     vmax = float(np.nanmax(np.abs(Z)))
     drugs = [DRUG_LABELS.get(d, d) for d in order]
     tags = [f'<span style="color:{subtype_color(i)}"><b>S{i}</b></span>' for i in NARRATIVE_ORDER]
-    cnt = pd.read_csv(TABLES / "fig4_literature_validation.csv")
+    cnt = pd.read_csv(LIT_TABLE)
     catmap = {(r.subtype_short, r.drug): r.category for r in cnt.itertuples()}
     counts = cnt["category"].value_counts()
 
@@ -330,7 +333,7 @@ def fig4_validation_heatmap() -> None:
 
 
 def fig4_validation_lollipop() -> None:
-    v = pd.read_csv(TABLES / "fig4_literature_validation.csv")
+    v = pd.read_csv(LIT_TABLE)
     order = ["confirmed", "confounded", "discordant", "novel"]
     v["cat"] = pd.Categorical(v["category"], categories=order, ordered=True)
     v = v.sort_values(["cat", "dbeta"]).reset_index(drop=True)

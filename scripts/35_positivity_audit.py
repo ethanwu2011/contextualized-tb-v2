@@ -46,7 +46,7 @@ def main() -> int:
         for j, d in enumerate(drugs):
             pct = round(100.0 * float(X[mask, j].mean()), 1)
             band = "estimable" if LOW <= pct <= HIGH else "near-deterministic"
-            rows.append({"subtype": subtype_name(k), "n_subtype": n, "drug": d,
+            rows.append({"subtype": subtype_name(k, full=True), "n_subtype": n, "drug": d,
                          "receipt_pct": pct, "band": band})
     df = pd.DataFrame(rows)
     TABLES.mkdir(parents=True, exist_ok=True)

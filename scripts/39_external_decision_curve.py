@@ -229,21 +229,23 @@ def main() -> int:
             (ax[0], dc_i, "Internal (TB Portals)", "PATCH_full"),
             (ax[1], dc_e, "External (Brazil / SINAN)", "PATCH_harmonized"),
         ]:
-            a.plot(dc.threshold, dc.treat_all, color="#BBB", ls=":", label="treat all")
-            a.plot(dc.threshold, dc.treat_none, color="#BBB", ls="--", label="treat none")
+            # Unified palette (figures/palette.py): PATCH ink slate, resistance class wine,
+            # other comparator grey, reference strategies dark grey dotted/dashed.
+            a.plot(dc.threshold, dc.treat_all, color="#666666", ls=":", label="treat all")
+            a.plot(dc.threshold, dc.treat_none, color="#666666", ls="--", label="treat none")
             a.plot(
                 dc.threshold,
                 dc.resistance_class_only,
-                color="#0072B2",
+                color="#882255",
                 label="resistance class only",
             )
             a.plot(
                 dc.threshold,
                 dc.multivariable_clinical,
-                color="#E69F00",
+                color="#8C8C8C",
                 label="multivariable clinical",
             )
-            a.plot(dc.threshold, dc[pk], color="#B2182B", lw=2, label="PATCH")
+            a.plot(dc.threshold, dc[pk], color="#2E3440", lw=2, label="PATCH")
             a.axvspan(0.10, 0.30, color="#000", alpha=0.04)
             a.set_xlabel("risk threshold")
             a.set_ylabel("net benefit")

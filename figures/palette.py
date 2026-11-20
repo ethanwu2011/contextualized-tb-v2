@@ -35,12 +35,18 @@ _OKABE_ITO = {
 # (orange/vermillion), so the good→bad axis is legible from colour alone. Defining this against the
 # real index (not narrative order) removes the old per-figure CANON2PAL remap, which was duplicated
 # across scripts and a latent mislabelling hazard.
+# "short" is the figure label (the short names given with Table 1); "name" is the full Table 1 name.
 SUBTYPES: dict[int, dict[str, str]] = {
-    0: {"name": "Drug-sensitive responders", "hex": "#009E73", "family": "responder"},  # 4.5% unfav
-    1: {"name": "High-burden / regional failure", "hex": "#E69F00", "family": "failure"},  # 34.0%
-    2: {"name": "Mixed-spectrum resistance responders", "hex": "#0072B2", "family": "responder"},  # 4.6%
-    3: {"name": "HIV-enriched severe-resistance failure", "hex": "#D55E00", "family": "failure"},  # 34.9%
-    4: {"name": "MDR-predominant responders", "hex": "#56B4E9", "family": "responder"},    # 8.0%
+    0: {"name": "Drug-sensitive responders", "short": "Drug-sensitive responders",
+        "hex": "#009E73", "family": "responder"},  # 4.5% unfav
+    1: {"name": "High-burden / regional failure", "short": "High-burden / regional",
+        "hex": "#E69F00", "family": "failure"},  # 34.0%
+    2: {"name": "Mixed-spectrum resistance responders", "short": "Resistant responders",
+        "hex": "#0072B2", "family": "responder"},  # 4.6%
+    3: {"name": "HIV-enriched severe-resistance failure", "short": "Severe-resistant / HIV",
+        "hex": "#D55E00", "family": "failure"},  # 34.9%
+    4: {"name": "MDR-predominant responders", "short": "MDR responders",
+        "hex": "#56B4E9", "family": "responder"},    # 8.0%
 }
 # Canonical display order: the three responders, then the two failure subtypes (manuscript §2.3).
 NARRATIVE_ORDER: list[int] = [0, 2, 4, 1, 3]
@@ -51,9 +57,9 @@ def subtype_color(i: int) -> str:
     return SUBTYPES[i]["hex"]
 
 
-def subtype_name(i: int) -> str:
-    """Display name for canonical subtype index ``i`` (e.g. 'Drug-sensitive responders')."""
-    return SUBTYPES[i]["name"]
+def subtype_name(i: int, *, full: bool = False) -> str:
+    """Figure label for canonical subtype index ``i``; ``full=True`` gives the full Table 1 name."""
+    return SUBTYPES[i]["name" if full else "short"]
 
 
 def subtype_family(i: int) -> str:
@@ -83,13 +89,24 @@ MODALITY_COLORS: dict[str, str] = {
     "labs": "#949494",              # grey
 }
 
-# --- Baseline / model comparison colours (kept consistent with src/ctb/viz/style.py) -----------
+# --- PATCH versus comparators: one colour for PATCH, greys for everything it is compared with ----
+# The five subtype hues above are reserved for subtypes. PATCH is the same ink slate in every model
+# comparison; comparator models are greys; reference lines (treat all / none, chance, perfect
+# calibration, null expectations) are a darker grey drawn dashed or dotted. The one exception is
+# resistance-class-only targeting, drawn in the resistance-modality wine so "resistance" is one colour
+# across Fig. 2c, Fig. 6 and Supplementary Figs. S10 and S14.
+PATCH_COLOR = "#2E3440"
+COMPARATOR_GREY = "#8C8C8C"
+COMPARATOR_LIGHT = "#BDBDBD"
+REFERENCE_GREY = "#666666"
+RESISTANCE_CLASS_COLOR = MODALITY_COLORS["resistance"]
+
 MODEL_COLORS: dict[str, str] = {
-    "LR-no-context": "#949494",
-    "LR-with-context": "#0072B2",
-    "GBDT-no-context": "#E69F00",
-    "GBDT-with-context": "#009E73",
-    "PATCH": "#CC79A7",
+    "LR-no-context": COMPARATOR_LIGHT,
+    "LR-with-context": COMPARATOR_GREY,
+    "GBDT-no-context": COMPARATOR_LIGHT,
+    "GBDT-with-context": COMPARATOR_GREY,
+    "PATCH": PATCH_COLOR,
 }
 
 # --- Binary clinical-status overlays (Fig 3) ---------------------------------------------------

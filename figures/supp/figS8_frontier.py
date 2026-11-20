@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 
 from ctb.config import FIGURES_DIR, TABLES_DIR
-from figures.palette import subtype_color
+from figures.palette import COMPARATOR_GREY, COMPARATOR_LIGHT, PATCH_COLOR
 from figures.panels import panel_label, pval_annot, save_figure
 from figures.style import mm, set_style
 
@@ -41,28 +41,28 @@ def main() -> int:
     lad = pd.read_csv(LADDER)
     n = len(lad)
     yy = np.arange(n)[::-1].astype(float)
-    # context-only and PATCH share the prognostic-ceiling colour; regimen and black-box concat are greys
-    rung_c = (["#B0B0B0", "#0072B2", "#6C7787", "#0072B2"] if n == 4
-              else ["#B0B0B0", "#6C7787", "#2E3440"])
+    # PATCH and the context-only ceiling it matches share the PATCH colour; the other rungs are greys
+    rung_c = ([COMPARATOR_LIGHT, PATCH_COLOR, COMPARATOR_GREY, PATCH_COLOR] if n == 4
+              else [COMPARATOR_LIGHT, COMPARATOR_GREY, PATCH_COLOR])
     for k in range(n):
         r = lad.iloc[k]
         axA.plot([r.ci_low, r.ci_high], [yy[k], yy[k]], color=rung_c[k], lw=1.6, solid_capstyle="round")
         axA.scatter(r.auc, yy[k], s=26, color=rung_c[k], zorder=4, edgecolors="white", lw=0.5)
     ceil = lad.iloc[1].auc                                   # context-only = prognostic ceiling
-    axA.axvline(ceil, ls="--", lw=0.6, color="#0072B2", alpha=0.55, zorder=0)
+    axA.axvline(ceil, ls="--", lw=0.6, color=PATCH_COLOR, alpha=0.55, zorder=0)
     a_reg, a_ctx = lad.iloc[0].auc, lad.iloc[1].auc          # regimen -> context jump (the real signal)
     axA.annotate("", xy=(a_ctx, yy[1]), xytext=(a_reg, yy[0]),
                  arrowprops=dict(arrowstyle="->", color="#333333", lw=0.7,
                                  connectionstyle="arc3,rad=-0.25"))
     axA.text((a_reg + a_ctx) / 2 - 0.015, (yy[0] + yy[1]) / 2 + 0.18, f"+{a_ctx - a_reg:.2f}",
              ha="center", va="center", fontsize=6.0, color="#333333")
-    d_edge = lad.iloc[2].auc - lad.iloc[1].auc              # black box's marginal regimen edge
+    d_edge = lad.iloc[2].auc - lad.iloc[1].auc              # concatenated model's marginal regimen edge
     axA.text(lad.iloc[2].ci_high + 0.004, yy[2], f"+{d_edge:.3f} (regimen)", va="center", ha="left",
              fontsize=5.2, color="#666666")
     axA.text(lad.iloc[3].ci_high + 0.004, yy[3], "= ceiling (n.s.)", va="center", ha="left",
-             fontsize=5.2, color="#0072B2")
+             fontsize=5.2, color=PATCH_COLOR)
     axA.set_yticks(yy)
-    axA.set_yticklabels(["regimen\nonly", "context only\n(prognosis)", "+ regimen\n(black box)",
+    axA.set_yticklabels(["regimen\nonly", "context only\n(prognosis)", "+ regimen\n(logistic)",
                          "archetypes\n(PATCH)"], fontsize=5.6, linespacing=0.9)
     axA.set_xlim(0.60, 0.92)
     axA.set_ylim(-0.6, n - 0.4)
@@ -79,15 +79,15 @@ def main() -> int:
     axB.axhline(BASELINE, color="#555555", lw=0.8, ls="--", zorder=1)
     axB.text(5.35, BASELINE + 0.0013, "baseline (±boot. noise)", fontsize=5.4, color="#555555",
              ha="right", va="bottom")
-    for ent, col, lab in [(1.0, subtype_color(0), "penalty on (balanced)"),
-                          (0.0, "#B0B0B0", "penalty off (collapses)")]:
+    for ent, col, lab in [(1.0, PATCH_COLOR, "penalty on (balanced)"),
+                          (0.0, COMPARATOR_LIGHT, "penalty off (collapses)")]:
         d = df[df["entropy"] == ent]
         axB.scatter(d["populated"], d["oof_auroc"], s=22, color=col, edgecolors="white",
                     linewidths=0.4, label=lab, zorder=3)
     canon = df[df["canonical"]]
     if len(canon):
         cx, cy = float(canon["populated"].iloc[0]), float(canon["oof_auroc"].iloc[0])
-        axB.scatter([cx], [cy], s=90, marker="*", color=subtype_color(0), edgecolors="black",
+        axB.scatter([cx], [cy], s=90, marker="*", color=PATCH_COLOR, edgecolors="black",
                     linewidths=0.6, zorder=5)
         axB.annotate("PATCH operating point\n(5 balanced subtypes)", xy=(cx, cy),
                      xytext=(cx - 1.7, cy - 0.006), fontsize=5.4, color="#222222", ha="left",

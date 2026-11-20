@@ -42,6 +42,10 @@ details. The links are included so a reader can repeat the source check.
 * van der Walt et al. Treatment outcomes and adverse drug effects of ethambutol, cycloserine, and terizidone for the treatment of multidrug-resistant tuberculosis in South Africa. [PubMed record](https://pubmed.ncbi.nlm.nih.gov/33046491/).
 * Fâcă et al. Nutritional deficiencies and management in tuberculosis. [PubMed record](https://pubmed.ncbi.nlm.nih.gov/40507146/).
 * Sambarey et al. Integrative analysis of multimodal patient data and tuberculosis prognosis. [PubMed record](https://pubmed.ncbi.nlm.nih.gov/38357663/).
+* Horsburgh et al. Treatment of tuberculosis. [PubMed record](https://pubmed.ncbi.nlm.nih.gov/26605929/).
+* Nunn et al. Role of co-trimoxazole prophylaxis in reducing mortality in HIV infected adults being treated for tuberculosis. [PubMed record](https://pubmed.ncbi.nlm.nih.gov/18617486/).
+* Ahmad et al. Treatment correlates of successful outcomes in pulmonary multidrug-resistant tuberculosis: an individual patient data meta-analysis. [PubMed record](https://pubmed.ncbi.nlm.nih.gov/30215381/).
+* Cevik et al. Bedaquiline-pretomanid-moxifloxacin-pyrazinamide for drug-sensitive and drug-resistant tuberculosis (SimpliciTB). [PubMed record](https://pubmed.ncbi.nlm.nih.gov/38768617/).
 
 ## Interpretation rules
 
@@ -57,8 +61,9 @@ interpretive step auditable, not to replace an independent replication or a pros
 
 ## Reproduction
 
-The figure export reads the locally generated aggregate file
-`results/tables/fig4_literature_validation.csv`. The public repository does not contain that file or
-the restricted clinical data. Researchers with an approved data-use agreement can regenerate the
-aggregate table with the analysis workflow, review it against this ledger, and run
-`bash scripts/scan_public.sh <PUBLIC_DIR>` before sharing any derived artifact.
+The cell-level review table behind Figure 4c and 4d ships with the code at
+`figures/source_data/fig4_literature_validation.csv`, and `figures/pptx_export.py` reads it from
+there. It holds the 23 cells' coefficient contrasts, P values, review states and sources, the same
+values Figure 4 prints, and no patient rows or counts. Its column definitions and disclosure review
+are in `figures/source_data/README.md`, and `scripts/scan_public.sh` pins its hash. The restricted
+clinical data are not in the repository.

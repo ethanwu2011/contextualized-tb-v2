@@ -301,7 +301,6 @@ def fig1_native(slide):
 
 
 SLIDES = [
-    {"kind": "tall", "img": A / "fig01_hero.png"},
     {"kind": "leftstack", "title": "Figure 2 — Treatment-response subtypes",
      "p": [A / "fig02_a_rate.png", A / "fig02_b_radars.png", A / "fig02_c_attribution.png"]},
     {"kind": "fig3", "title": "Figure 3 — Contextualization organizes the treatment-response structure and the outcome",

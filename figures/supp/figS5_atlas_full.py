@@ -137,7 +137,7 @@ def main() -> int:
     pval_annot(
         ax,
         f"Coloured cells = bootstrap-significant ({n_sig}/{S.size}); grey = n.s.  ·  "
-        f"{N_BOOT}-resample percentile test, BH-FDR.  Colour clipped at 98th pct of |Δβ|.",
+        f"{N_BOOT}-resample percentile test, unadjusted.  Colour clipped at 98th pct of |Δβ|.",
         xy=(0.5, -0.34), fontsize=5.2,
     )
     pval_annot(ax, "DST results coded =R (resistant) / =S (susceptible)",

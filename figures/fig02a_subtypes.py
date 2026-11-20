@@ -1,8 +1,10 @@
-"""Figure 2a — the five treatment-response subtypes: outcome split + defining clinical profile.
+"""Figure 2, the five treatment-response subtypes.
 
-Left: per-subtype unfavorable-outcome rate (the 3 cool responders vs 2 warm failure subtypes).
-Right: z-scored enrichment heatmap of the defining features (resistance, HIV, burden, region, age)
-with a subtype-colour sidebar. Reads only the aggregate characterization table (5 rows; DUA-safe).
+(a) Per-subtype unfavorable-outcome rate (the 3 cool responders vs 2 warm failure subtypes), with
+Wilson 95% CIs and a chi-square test across subtypes. (b) z-scored enrichment heatmap of the defining
+features (resistance, HIV, burden, region, age) on the same rows as (a). (c) Modality attribution,
+total and per-feature share, with Table 2's point estimates and permutation intervals.
+Reads only aggregate tables (5 subtype rows; 9 modality rows; DUA-safe).
 
 Run: ``uv run python -m figures.fig02a_subtypes``
 """
@@ -26,7 +28,7 @@ from figures.palette import (
     subtype_color,
     subtype_name,
 )
-from figures.panels import panel_label, pval_annot, save_figure, thin_colorbar
+from figures.panels import save_figure, thin_colorbar
 from figures.style import mm, set_style
 
 
@@ -67,105 +69,97 @@ def main() -> int:
     contingency = np.vstack([unfav_k, n - unfav_k])
     chi2, p_chi, _, _ = chi2_contingency(contingency)
 
-    fig = plt.figure(figsize=(mm(180), mm(100)))
-    gs = fig.add_gridspec(2, 2, width_ratios=[1.0, 2.4], height_ratios=[1.45, 1.0],
-                          wspace=0.05, hspace=0.55)
+    fig = plt.figure(figsize=(mm(180), mm(104)))
+    gs = fig.add_gridspec(2, 2, width_ratios=[1.0, 2.1], height_ratios=[1.3, 1.0],
+                          left=0.135, right=0.93, top=0.95, bottom=0.12, wspace=0.04, hspace=0.62)
 
-    # --- left: unfavorable-outcome rate bars (Wilson 95% CI error bars) ---
+    # --- a: unfavorable-outcome rate. Rows line up with the heatmap rows in b, so each subtype is
+    # named once, on the left, and both panels read across as one table. ---
+    rows = np.arange(5)
     axL = fig.add_subplot(gs[0, 0])
-    y = np.arange(5)[::-1]
-    axL.barh(y, unfav, color=COLORS, edgecolor="white", lw=0.5, height=0.72, zorder=2)
+    axL.barh(rows, unfav, color=COLORS, edgecolor="white", lw=0.5, height=0.62, zorder=2)
     xerr = np.vstack([unfav - ci_lo, ci_hi - unfav])
-    axL.errorbar(unfav, y, xerr=xerr, fmt="none", ecolor="#333333", elinewidth=0.6,
+    axL.errorbar(unfav, rows, xerr=xerr, fmt="none", ecolor="#222222", elinewidth=0.6,
                  capsize=1.6, capthick=0.6, zorder=3)
-    for yi, (u, hi, ni) in enumerate(zip(unfav, ci_hi, n, strict=True)):
+    for r, (u, hi) in enumerate(zip(unfav, ci_hi, strict=True)):
         lab = f"{u:.1f}%" if u < 10 else f"{u:.0f}%"  # 1 dp for the near-tied responders
-        axL.text(hi + 1, y[yi], lab, va="center", ha="left", fontsize=6)
-        axL.text(0.5, y[yi] + 0.40, f"{NAMES[yi]}  (n={ni:,})", va="bottom", ha="left", fontsize=5.4)
-    axL.set_xlim(0, 44)
-    axL.set_ylim(-0.6, 4.9)
-    axL.set_yticks([])
-    axL.set_xlabel("unfavorable (%), 95% CI")
+        axL.text(hi + 1.0, r, lab, va="center", ha="left", fontsize=6)
+    axL.set_yticks(rows)
+    axL.set_yticklabels([f"{name}\nn = {ni:,}" for name, ni in zip(NAMES, n, strict=True)],
+                        fontsize=6, linespacing=1.15)
+    axL.tick_params(axis="y", length=0, pad=3)
+    axL.set_ylim(4.5, -0.5)
+    axL.set_xlim(0, 45)
+    axL.set_xticks([0, 10, 20, 30, 40])
+    axL.set_xlabel("Died or treatment failure (%)")
     axL.spines["left"].set_visible(False)
-    pval_annot(axL, f"$\\chi^2$={chi2:.0f}, df=4, P<0.001", xy=(0.98, 0.10), fontsize=5.6)
-    axL.texts[-1].set_ha("right")
-    panel_label(axL, "a", dx=-0.02, dy=1.07)
+    p_txt = "P < 0.001" if p_chi < 0.001 else f"P = {p_chi:.3f}"
+    axL.text(0.98, 0.97, f"$\\chi^2$ = {chi2:,.0f}, 4 df\n{p_txt}", transform=axL.transAxes,
+             ha="right", va="top", fontsize=5.8, color="#000000")
 
-    # --- right: z-scored enrichment heatmap ---
-    axR = fig.add_subplot(gs[0, 1])
+    # --- b: z-scored enrichment heatmap on the same rows ---
+    axR = fig.add_subplot(gs[0, 1], sharey=axL)
     norm = TwoSlopeNorm(vmin=min(-2, z.min()), vcenter=0, vmax=max(2, z.max()))
-    axR.imshow(z, cmap=DIVERGING_CMAP, norm=norm, aspect="auto")
+    axR.imshow(z, cmap=DIVERGING_CMAP, norm=norm, aspect="auto",
+               extent=(-0.5, len(FEATURES) - 0.5, 4.5, -0.5))
     axR.set_xticks(range(len(FEATURES)))
     axR.set_xticklabels([lbl for _, lbl in FEATURES], rotation=35, ha="right", fontsize=6)
-    axR.set_yticks(range(5))
-    axR.set_yticklabels([])
+    axR.tick_params(axis="y", left=False, labelleft=False)
+    axR.set_ylim(4.5, -0.5)
     for i in range(5):  # raw values printed in each cell (the figure is self-contained)
         for j in range(len(FEATURES)):
             v = raw[i, j]
             txt = f"{v:.0f}" if FEATURES[j][0] != "age" else f"{v:.0f}y"
-            axR.text(j, i, txt, ha="center", va="center", fontsize=5.5,
-                     color="white" if abs(z[i, j]) > 1.4 else "#222222")
-    # subtype colour sidebar + short text row tags (sit fully left of the heatmap grid).
-    # Tags (S0/S2/S4/S1/S3) make every row identifiable in grayscale / for colourblind readers;
-    # full names with n are on panel a, so a compact tag here suffices without crowding panel a.
-    for i in range(5):
-        axR.add_patch(plt.Rectangle((-0.95, i - 0.5), 0.42, 1.0, color=COLORS[i],
-                                    clip_on=False, zorder=5))
-        axR.text(-1.02, i, NARRATIVE[i], ha="right", va="center", fontsize=5.5, clip_on=False)
-    axR.set_xlim(-1.05, len(FEATURES) - 0.5)
-    axR.set_xticks(range(len(FEATURES)))
-    thin_colorbar(fig, axR, DIVERGING_CMAP, norm,
-                  "z-scored within column (colour); cell = raw %",
+            axR.text(j, i, txt, ha="center", va="center", fontsize=5.6,
+                     color="white" if abs(z[i, j]) > 1.4 else "#000000")
+    for side in ("top", "right", "left", "bottom"):
+        axR.spines[side].set_visible(False)
+    thin_colorbar(fig, axR, DIVERGING_CMAP, norm, "z-score within column",
                   poles=("depleted", "enriched"))
-    panel_label(axR, "b", dx=-0.02, dy=1.07)
-    axR.set_title("defining clinical profile  ·  cell = % of subtype (age in years)",
-                  fontsize=6, pad=3, loc="left")
+    axR.set_title("% of subtype (age in years)", fontsize=6, pad=3, loc="left")
 
-    # --- bottom (c): modality attribution — total vs per-feature share ---
-    # Keep ALL modalities incl. 'other' (greyed) so both share series sum to 1.0 and the panel is
-    # honest: 'other' (2 features) is the single LARGEST per-feature contributor, so dropping it
-    # would hide the biggest per-feature category. Sorted by total share.
+    # --- c: modality attribution, total vs per-feature share ---
+    # Bar heights are the point estimates of Table 2 (multimodal_modality_attribution.csv); the error
+    # bars are the 2.5th to 97.5th percentiles over 50 permutation rounds (..._ci.csv). Keeps ALL
+    # modalities incl. 'other' (greyed) so both share series sum to 1.0.
     axM = fig.add_subplot(gs[1, :])
-    # Read the CI table (50-permutation 95% intervals) so the bars carry uncertainty.
-    attr = pd.read_csv(ATTR.with_name("multimodal_modality_attribution_ci.csv")).sort_values(
-        "total_share", ascending=False)
-    mods = attr["modality"].tolist()
+    point = pd.read_csv(ATTR).set_index("modality")
+    ci = pd.read_csv(ATTR.with_name("multimodal_modality_attribution_ci.csv")).set_index("modality")
+    if set(point.index) != set(ci.index):
+        raise ValueError("attribution point and interval tables list different modalities")
+    point = point.sort_values("total_share", ascending=False)
+    ci = ci.reindex(point.index)
+    mods = point.index.tolist()
     x = np.arange(len(mods))
     w = 0.4
     cols = [MODALITY_COLORS.get(m, "#BFBFBF") for m in mods]  # 'other' -> neutral grey
-    tot = attr["total_share"].to_numpy() * 100
-    pf = attr["per_feature_share"].to_numpy() * 100
-    tot_err = np.vstack([tot - attr["total_lo"] * 100, attr["total_hi"] * 100 - tot])
-    pf_err = np.vstack([pf - attr["perfeat_lo"] * 100, attr["perfeat_hi"] * 100 - pf])
+    tot = point["total_share"].to_numpy() * 100
+    pf = point["per_feature_share"].to_numpy() * 100
+    tot_err = np.clip(np.vstack([tot - ci["total_lo"] * 100, ci["total_hi"] * 100 - tot]), 0, None)
+    pf_err = np.clip(np.vstack([pf - ci["perfeat_lo"] * 100, ci["perfeat_hi"] * 100 - pf]), 0, None)
     axM.bar(x - w / 2, tot, w, color=cols, edgecolor="white", lw=0.5)
-    axM.errorbar(x - w / 2, tot, yerr=tot_err, fmt="none", ecolor="#333333", elinewidth=0.5,
+    axM.errorbar(x - w / 2, tot, yerr=tot_err, fmt="none", ecolor="#222222", elinewidth=0.5,
                  capsize=1.2, zorder=4)
     axM.bar(x + w / 2, pf, w, color=cols, edgecolor="white", lw=0.5, alpha=0.45, hatch="///")
-    axM.errorbar(x + w / 2, pf, yerr=pf_err, fmt="none", ecolor="#333333", elinewidth=0.5,
+    axM.errorbar(x + w / 2, pf, yerr=pf_err, fmt="none", ecolor="#222222", elinewidth=0.5,
                  capsize=1.2, zorder=4)
     axM.set_xticks(x)
     axM.set_xticklabels([m.replace("_", " ") for m in mods], rotation=25, ha="right", fontsize=6)
-    axM.set_ylabel("contribution (%)", fontsize=6.5)
-    axM.set_title("No single modality dominates — resistance leads in aggregate but is near-lowest "
-                  "per feature; sparse modalities lead per feature",
-                  fontsize=6.5, pad=3, loc="left")
-    # Neutral solid-vs-hatched proxies: colour already encodes modality, so the legend must convey
-    # only the PATTERN (which series), not a colour. Placed in interior whitespace, clear of bars.
-    handles = [Patch(facecolor="#888888", edgecolor="white", label="total share"),
+    axM.set_ylabel("Contribution (%)", fontsize=6.5)
+    # Neutral solid-vs-hatched proxies: colour already encodes modality, so the legend conveys only
+    # which series is which.
+    handles = [Patch(facecolor="#888888", edgecolor="white", label="Total share"),
                Patch(facecolor="#888888", edgecolor="white", alpha=0.45, hatch="///",
-                     label="per-feature share")]
-    axM.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.46, 1.0), fontsize=6,
-               handlelength=1.4, ncol=2)
-    # Annotate the largest rank flip: labs is LAST in aggregate but the highest per feature among
-    # the named modalities (the catch-all 'other' is higher per feature but is not a single modality).
-    i_labs = mods.index("labs")
-    axM.annotate("largest rank flip:\nlast in aggregate,\nhighest per feature\n"
-                 "(of named modalities)",
-                 xy=(i_labs + w / 2, attr["per_feature_share"].iloc[i_labs] * 100 + 0.5),
-                 xytext=(i_labs - 2.6, 22), fontsize=5.4, color="#555555", ha="left",
-                 arrowprops=dict(arrowstyle="->", lw=0.5, color="#999999"))
+                     label="Per-feature share")]
+    axM.legend(handles=handles, loc="upper center", fontsize=6, handlelength=1.4, ncol=2,
+               frameon=False)
     axM.set_ylim(0, 40)
-    panel_label(axM, "c", dx=-0.05, dy=1.10)
+
+    # Panel letters on one left margin for a and c, and at the heatmap edge for b.
+    for ax, letter, xf in ((axL, "a", 0.012), (axR, "b", None), (axM, "c", 0.012)):
+        pos = ax.get_position()
+        fig.text(pos.x0 - 0.026 if xf is None else xf, pos.y1 + 0.035, letter, fontsize=9,
+                 fontweight="bold", va="top", ha="left")
 
     pdf, png = save_figure(fig, "fig02_subtypes", FIG_DIR)
     print(f"wrote {pdf.name}, {png.name}")

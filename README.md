@@ -106,18 +106,58 @@ uv run --locked python scripts/01_build_dataset.py
 uv run --locked python scripts/05c_build_unfavorable_matrices.py
 ```
 
-The endpoint-explicit matrix is the input for the manuscript analyses. The older
-`scripts/05b_build_conversion_matrices.py` script is retained for a separate culture-conversion
-analysis and must not be used for the manuscript endpoint.
+The endpoint-explicit matrix is the input for the manuscript analyses. The culture-conversion
+builder `scripts/05b_build_conversion_matrices.py` is needed only for Supplementary Figs. S1 and S2,
+which were fitted on culture conversion; it must not be used for the primary endpoint.
 
 For a release build with provenance enforcement, set `CTB_REQUIRE_CLEAN_RELEASE=1` before running
 the endpoint builder. The generated manifest records the commit, dirty-tree state, critical source
 hashes, preprocessing contract, and hashes of the local endpoint artifacts.
 
-The core analysis scripts are numbered and their inputs are documented in
-`docs/SUPPLEMENTARY_FIGURES.md`. The canonical temporal leakage check is
+The core analysis scripts are numbered. The figure table below maps every figure to the script
+that draws it and the script that writes its input. The canonical temporal leakage check is
 `scripts/28_temporal_leakfree.py`. Every imputation, standardization step, and category vocabulary
 used in a holdout analysis must be fitted on the training split only.
+
+## Figures
+
+Each figure in the paper and the code that draws it. Run a figure module with
+`uv run --locked python -m <module>` from the repository root, for example
+`uv run --locked python -m figures.fig02a_subtypes`. The summary tables are written to
+`results/tables/` by the analysis scripts in the last column, which need the approved TB Portals data
+(and, for Fig. 5 and S14, the SINAN registry). The only table shipped here is the reviewed
+`figures/source_data/fig4_literature_validation.csv`. Figures marked *patient level* refit or
+re-read the processed patient matrices, so only an approved data holder can redraw them.
+
+| Figure | Drawn by | Reads | Input written by |
+|---|---|---|---|
+| 1 | By hand (BioRender and PowerPoint), not code | | |
+| 2 | `figures.fig02a_subtypes` | Summary tables | `scripts/22_multimodal_subtypes.py`, `scripts/29_modality_attribution_ci.py` |
+| 3 | `figures.fig03_structure` | Patient level | `scripts/22_multimodal_subtypes.py`, `scripts/05c_build_unfavorable_matrices.py` |
+| 4a | `figures.fig04_atlas_plotly` | Summary table | `scripts/10_heterogeneity_atlas.py` |
+| 4b | `figures.pptx_export` (`fig4_subtype_drug`) | Summary table | `scripts/25_multimodal_drug_effects.py` |
+| 4c, 4d | `figures.pptx_export` (`fig4_validation_heatmap`, `fig4_validation_lollipop`) | Summary table and shipped review table | `scripts/25_multimodal_drug_effects.py`, `figures/source_data/fig4_literature_validation.csv` |
+| 5 | `figures.fig05_external_brazil` | Summary tables | `scripts/32_external_validation.py` |
+| 6 | `figures.fig06_clinical_utility` | Summary tables | `scripts/37_decision_curve.py` |
+| S1 | `figures.supp.figS1_reproducibility` | Patient level, refits | `scripts/05b_build_conversion_matrices.py` (culture conversion, as published) |
+| S2 | `figures.supp.figS2_kselection` | Patient level, refits | `scripts/05b_build_conversion_matrices.py` (culture conversion, as published) |
+| S3 | `figures.supp.figS3_entropy_sensitivity` | Summary tables | `scripts/27_entropy_sensitivity.py` |
+| S4 | `figures.supp.figS4_resistance_recovery` | Patient level | `scripts/05c_build_unfavorable_matrices.py`, `scripts/22_multimodal_subtypes.py` |
+| S5 | `figures.supp.figS5_atlas_full` | Summary table | `scripts/10_heterogeneity_atlas.py` |
+| S6 | `figures.supp.figS6_drug_ranking` | Summary tables | `scripts/14_heterogeneity_deepening.py` |
+| S7 | `figures.supp.figS7_calibration_pr` | Summary table | `scripts/30_calibration_auprc.py` |
+| S8 | `figures.supp.figS8_frontier` | Summary tables | `scripts/15_model_ladder_unfavorable.py`, `scripts/33_hparam_sweep.py` |
+| S9 | `figures.supp.figS9_internal_generalization` | Summary tables | `scripts/24_temporal_validation.py`, `scripts/26_cross_population.py` |
+| S10 | `figures.fig06_clinical_utility` (panel a) | Summary tables | `scripts/37_decision_curve.py` |
+| S11 | `scripts/26_enrichment_permutation_null.py` | Patient level, refits | the same script |
+| S12 | `scripts/27_profile_stability_null.py` | Patient level, refits | the same script |
+| S13 | `scripts/28_effect_recovery_benchmark.py` | Patient level, semi-synthetic | the same script |
+| S14 | `scripts/39_external_decision_curve.py` | Patient level | the same script |
+
+Fig. 4 is assembled from its four panels by hand. Supplementary Figs. S1 and S2 take
+`--endpoint died_or_failure` to refit on the primary endpoint instead; that run writes separately
+named files. All figures share one palette, `figures/palette.py`: the five subtype colours are used
+only for subtypes, PATCH is one ink colour in every model comparison, and comparators are grey.
 
 ## Repository layout
 

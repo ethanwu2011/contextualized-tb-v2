@@ -5,6 +5,9 @@ pairwise adjusted Rand index between seed solutions and (b) the per-subtype cros
 (fraction of a subtype's patients that stay together after Hungarian label-matching). Trains
 internally; emits only the figure.
 
+Fitted on observed culture conversion by default, as published; ``--endpoint died_or_failure``
+refits on the primary endpoint (see figures/supp/_endpoint.py).
+
 Run: ``uv run python -m figures.supp.figS1_reproducibility``
 """
 
@@ -18,9 +21,9 @@ from scipy.optimize import linear_sum_assignment
 from sklearn.metrics import adjusted_rand_score
 
 from ctb.config import FIGURES_DIR
-from ctb.data.artifacts import load_primary_matrix
 from ctb.models.archetype_contextualized import LinearArchetypeContextualized, TrainConfig, train
 from figures.palette import NARRATIVE_ORDER, SEQUENTIAL_CMAP, subtype_color, subtype_name
+from figures.supp._endpoint import figure_stem, load_matrix, parse_endpoint
 from figures.panels import panel_label, pval_annot, save_figure, thin_colorbar
 from figures.style import mm, set_style
 
@@ -39,9 +42,9 @@ def _match(ref: np.ndarray, other: np.ndarray) -> dict[int, int]:
     return {int(o): int(rr) for rr, o in zip(r, c, strict=True)}
 
 
-def main() -> int:
+def main(endpoint: str = "conversion") -> int:
     set_style()
-    data = load_primary_matrix()
+    data = load_matrix(endpoint)
     c, x = data["C"].astype(np.float64), data["X"].astype(np.float64)
     y = data["y"].astype(np.float64)
 
@@ -131,10 +134,10 @@ def main() -> int:
                fontsize=5.5)
     panel_label(axB, "b", dx=-0.42, dy=1.07)
 
-    pdf, png = save_figure(fig, "figS1_reproducibility", FIG_DIR)
+    pdf, png = save_figure(fig, figure_stem("figS1_reproducibility", endpoint), FIG_DIR)
     print(f"wrote {pdf.name}, {png.name}")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(parse_endpoint(description=__doc__)))

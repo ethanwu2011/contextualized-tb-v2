@@ -15,7 +15,6 @@ import sys
 import pandas as pd
 import plotly.graph_objects as go
 
-from figures.palette import subtype_name
 from figures.plotly_style import INK, MUTED, OUT, TABLES, hex_to_rgba, save
 
 C_TBP, C_BR = "#4C566A", "#117733"  # slate = TB Portals; forest green = Brazil (another continent)
@@ -28,9 +27,10 @@ def main() -> int:
     d = pd.DataFrame({"tbp": tbp["unfav%"], "bra": bra["unfav%"], "hiv": bra["hiv"]}).sort_values("tbp")
     order = d.index.tolist()
     def _label(code: object) -> str:
+        # Harmonized seven-feature profiles are not the PATCH subtypes, so they get no subtype name.
         idx = int(str(code).removeprefix("S"))
         hiv_tag = "  ·  HIV-enriched" if d.loc[code, "hiv"] > 0.5 else ""
-        return f"S{idx}  {subtype_name(idx)}{hiv_tag}"
+        return f"Profile {idx}{hiv_tag}"
 
     ylab = [_label(s) for s in order]
     y = list(range(len(order)))

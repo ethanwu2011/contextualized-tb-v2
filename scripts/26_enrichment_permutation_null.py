@@ -199,11 +199,11 @@ def main() -> int:
         import matplotlib.pyplot as plt
         fig, ax = plt.subplots(figsize=(6.2, 4.0))
         bins = np.arange(-0.5, max(rot_max, n_obs) + 1.5, 1)
-        ax.hist(rot_counts, bins=bins, color="#9AA0A6", edgecolor="white",
+        ax.hist(rot_counts, bins=bins, color="#BDBDBD", edgecolor="white",
                 label=f"rotation null (mean {rot_mean:.1f}, SD {rot_sd:.1f})")
-        ax.axvline(indep_exp, color="#0072B2", ls="--", lw=1.5,
+        ax.axvline(indep_exp, color="#666666", ls="--", lw=1.5,
                    label=f"independence expectation ({indep_exp:.1f}, SD {binom_sd:.1f})")
-        ax.axvline(n_obs, color="#B2182B", lw=2.2, label=f"observed ({n_obs})")
+        ax.axvline(n_obs, color="#2E3440", lw=2.2, label=f"observed ({n_obs})")  # PATCH_COLOR
         ax.set_xlabel("number of nominally-significant subtype $\\times$ drug cells")
         ax.set_ylabel("Monte-Carlo draws")
         ax.set_title("Enrichment vs a correlation-preserving rotation null")

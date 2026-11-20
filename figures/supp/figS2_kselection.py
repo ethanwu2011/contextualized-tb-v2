@@ -4,7 +4,8 @@ Retrains the canonical PATCH model (entropy load-balancing) across K=4..8 with t
 reports how many archetypes stay populated (>=3% of patients) and the cross-seed reproducibility
 (mean ARI). K=5 is selected because it retains populated archetypes while avoiding the
 reproducibility drop observed at higher K.
-Trains internally; emits only the figure.
+Trains internally; emits only the figure. Fitted on observed culture conversion by default, as
+published; ``--endpoint died_or_failure`` refits on the primary endpoint (figures/supp/_endpoint.py).
 
 Run: ``uv run python -m figures.supp.figS2_kselection``
 """
@@ -18,8 +19,8 @@ import numpy as np
 from sklearn.metrics import adjusted_rand_score
 
 from ctb.config import FIGURES_DIR
-from ctb.data.artifacts import load_primary_matrix
 from ctb.models.archetype_contextualized import LinearArchetypeContextualized, TrainConfig, train
+from figures.supp._endpoint import figure_stem, load_matrix, parse_endpoint
 from figures.panels import pval_annot, save_figure
 from figures.style import SINGLE_COL_MM, mm, set_style
 
@@ -36,9 +37,9 @@ SELECT_EDGE = "#222222"    # outline used to flag the selected K=5
 BAR_GREY = "#D9D9D9"        # demoted, lightened populated-archetype bars
 
 
-def main() -> int:
+def main(endpoint: str = "conversion") -> int:
     set_style()
-    data = load_primary_matrix()
+    data = load_matrix(endpoint)
     c, x = data["C"].astype(np.float64), data["X"].astype(np.float64)
     y = data["y"].astype(np.float64)
 
@@ -124,10 +125,10 @@ def main() -> int:
               loc="upper right", bbox_to_anchor=(1.0, 1.0), frameon=False, fontsize=6,
               handlelength=1.4, borderaxespad=0.3)
 
-    pdf, png = save_figure(fig, "figS2_kselection", FIG_DIR)
+    pdf, png = save_figure(fig, figure_stem("figS2_kselection", endpoint), FIG_DIR)
     print(f"wrote {pdf.name}, {png.name}")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(parse_endpoint(description=__doc__)))
