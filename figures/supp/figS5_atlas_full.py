@@ -136,7 +136,7 @@ def main() -> int:
     # Stats provenance + scale honesty, on-panel (not only in the caption).
     pval_annot(
         ax,
-        f"Coloured cells = bootstrap-significant ({n_sig}/{S.size}); grey = n.s.  ·  "
+        f"Coloured cells = bootstrap-significant ({n_sig}/{S.size}); white = n.s.  ·  "
         f"{N_BOOT}-resample percentile test, unadjusted.  Colour clipped at 98th pct of |Δβ|.",
         xy=(0.5, -0.34), fontsize=5.2,
     )
@@ -150,9 +150,13 @@ def main() -> int:
     cb.outline.set_linewidth(0.5)
     cb.ax.tick_params(width=0.5, length=2)
     cb.set_label("drug-specific Δβ association", fontsize=6)
-    cb.ax.text(0.5, 1.04, DIVERGING_POLES[1], transform=cb.ax.transAxes,
+    # Two-line pole names placed beyond the extend caps, so the arrow tips never overprint them.
+    def _two_line(pole: str) -> str:
+        return pole.replace(" association", "\nassociation", 1)
+
+    cb.ax.text(0.5, 1.08, _two_line(DIVERGING_POLES[1]), transform=cb.ax.transAxes,
                ha="center", va="bottom", fontsize=5)
-    cb.ax.text(0.5, -0.06, DIVERGING_POLES[0], transform=cb.ax.transAxes,
+    cb.ax.text(0.5, -0.08, _two_line(DIVERGING_POLES[0]), transform=cb.ax.transAxes,
                ha="center", va="top", fontsize=5)
 
     pdf, png = save_figure(fig, "figS5_atlas_full", FIG_DIR)

@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 
 from ctb.config import FIGURES_DIR, TABLES_DIR
-from figures.palette import COMPARATOR_GREY, COMPARATOR_LIGHT, PATCH_COLOR
+from figures.palette import COMPARATOR_GREY, COMPARATOR_LIGHT, PATCH_COLOR, REFERENCE_GREY
 from figures.panels import panel_label, pval_annot, save_figure
 from figures.style import mm, set_style
 
@@ -41,7 +41,7 @@ def main() -> int:
     lad = pd.read_csv(LADDER)
     n = len(lad)
     yy = np.arange(n)[::-1].astype(float)
-    # PATCH and the context-only ceiling it matches share the PATCH colour; the other rungs are greys
+    # PATCH and the context-only rung it matches share the PATCH colour; the other rungs are greys
     rung_c = ([COMPARATOR_LIGHT, PATCH_COLOR, COMPARATOR_GREY, PATCH_COLOR] if n == 4
               else [COMPARATOR_LIGHT, COMPARATOR_GREY, PATCH_COLOR])
     for k in range(n):
@@ -49,7 +49,7 @@ def main() -> int:
         axA.plot([r.ci_low, r.ci_high], [yy[k], yy[k]], color=rung_c[k], lw=1.6, solid_capstyle="round")
         axA.scatter(r.auc, yy[k], s=26, color=rung_c[k], zorder=4, edgecolors="white", lw=0.5)
     ceil = lad.iloc[1].auc                                   # context-only = prognostic ceiling
-    axA.axvline(ceil, ls="--", lw=0.6, color=PATCH_COLOR, alpha=0.55, zorder=0)
+    axA.axvline(ceil, ls="--", lw=0.6, color=REFERENCE_GREY, alpha=0.7, zorder=0)
     a_reg, a_ctx = lad.iloc[0].auc, lad.iloc[1].auc          # regimen -> context jump (the real signal)
     axA.annotate("", xy=(a_ctx, yy[1]), xytext=(a_reg, yy[0]),
                  arrowprops=dict(arrowstyle="->", color="#333333", lw=0.7,
@@ -59,7 +59,7 @@ def main() -> int:
     d_edge = lad.iloc[2].auc - lad.iloc[1].auc              # concatenated model's marginal regimen edge
     axA.text(lad.iloc[2].ci_high + 0.004, yy[2], f"+{d_edge:.3f} (regimen)", va="center", ha="left",
              fontsize=5.2, color="#666666")
-    axA.text(lad.iloc[3].ci_high + 0.004, yy[3], "= ceiling (n.s.)", va="center", ha="left",
+    axA.text(lad.iloc[3].ci_high + 0.004, yy[3], "similar AUROC", va="center", ha="left",
              fontsize=5.2, color=PATCH_COLOR)
     axA.set_yticks(yy)
     axA.set_yticklabels(["regimen\nonly", "context only\n(prognosis)", "+ regimen\n(logistic)",
@@ -68,7 +68,7 @@ def main() -> int:
     axA.set_ylim(-0.6, n - 0.4)
     axA.set_xticks([0.6, 0.7, 0.8, 0.9])
     axA.set_xlabel("out-of-fold AUROC (95% CI)")
-    axA.set_title("Context carries the signal; PATCH sits at the prognostic ceiling", fontsize=6.2, pad=3)
+    axA.set_title("Context carries the prognostic signal", fontsize=6.2, pad=3)
     pval_annot(axA, "5-fold OOF · paired bootstrap", xy=(0.5, 0.10), fontsize=6.0)
     panel_label(axA, "a", dx=-0.42, dy=1.08)
 
@@ -99,8 +99,7 @@ def main() -> int:
     axB.set_xlabel("populated (interpretable) subtypes")
     axB.set_ylabel("out-of-fold AUROC (died / failure)")
     axB.set_xlim(2.8, 5.5)
-    axB.set_title("Accuracy ↔ interpretability frontier (≈0.79 ceiling is model-independent)",
-                  fontsize=6.6, pad=3)
+    axB.set_title("Accuracy ↔ interpretability frontier", fontsize=6.6, pad=3)
     # Legend lower-RIGHT (the operating-point annotation occupies the lower-left); the right margin
     # past 5 populated subtypes is empty, so it clears both the points and the annotation.
     axB.legend(loc="lower right", fontsize=5.6, handlelength=1.2)

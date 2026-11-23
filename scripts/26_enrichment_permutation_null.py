@@ -203,7 +203,7 @@ def main() -> int:
                 label=f"rotation null (mean {rot_mean:.1f}, SD {rot_sd:.1f})")
         ax.axvline(indep_exp, color="#666666", ls="--", lw=1.5,
                    label=f"independence expectation ({indep_exp:.1f}, SD {binom_sd:.1f})")
-        ax.axvline(n_obs, color="#2E3440", lw=2.2, label=f"observed ({n_obs})")  # PATCH_COLOR
+        ax.axvline(n_obs, color="#0072B2", lw=2.2, label=f"observed ({n_obs})")  # PATCH_COLOR
         ax.set_xlabel("number of nominally-significant subtype $\\times$ drug cells")
         ax.set_ylabel("Monte-Carlo draws")
         ax.set_title("Enrichment vs a correlation-preserving rotation null")

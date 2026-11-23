@@ -55,6 +55,15 @@ FEATURES = [
 ]
 
 
+def _two_lines(name: str) -> str:
+    """Break a subtype name over two lines for the heatmap rows (after a slash, else at the last space)."""
+    if " / " in name:
+        a, b = name.split(" / ", 1)
+        return f"{a} /\n{b}"
+    a, _, b = name.rpartition(" ")
+    return f"{a}\n{b}" if a else name
+
+
 def main() -> int:
     set_style()
     df = pd.read_csv(TABLE).set_index("subtype").reindex(NARRATIVE)
@@ -70,11 +79,11 @@ def main() -> int:
     chi2, p_chi, _, _ = chi2_contingency(contingency)
 
     fig = plt.figure(figsize=(mm(180), mm(104)))
-    gs = fig.add_gridspec(2, 2, width_ratios=[1.0, 2.1], height_ratios=[1.3, 1.0],
-                          left=0.135, right=0.93, top=0.95, bottom=0.12, wspace=0.04, hspace=0.62)
+    gs = fig.add_gridspec(2, 2, width_ratios=[1.0, 1.85], height_ratios=[1.3, 1.0],
+                          left=0.135, right=0.93, top=0.95, bottom=0.12, wspace=0.30, hspace=0.62)
 
-    # --- a: unfavorable-outcome rate. Rows line up with the heatmap rows in b, so each subtype is
-    # named once, on the left, and both panels read across as one table. ---
+    # --- a: unfavorable-outcome rate. Rows line up with the heatmap rows in b, and both panels name
+    # every subtype so each can be read on its own. ---
     rows = np.arange(5)
     axL = fig.add_subplot(gs[0, 0])
     axL.barh(rows, unfav, color=COLORS, edgecolor="white", lw=0.5, height=0.62, zorder=2)
@@ -98,13 +107,15 @@ def main() -> int:
              ha="right", va="top", fontsize=5.8, color="#000000")
 
     # --- b: z-scored enrichment heatmap on the same rows ---
-    axR = fig.add_subplot(gs[0, 1], sharey=axL)
+    axR = fig.add_subplot(gs[0, 1])
     norm = TwoSlopeNorm(vmin=min(-2, z.min()), vcenter=0, vmax=max(2, z.max()))
     axR.imshow(z, cmap=DIVERGING_CMAP, norm=norm, aspect="auto",
                extent=(-0.5, len(FEATURES) - 0.5, 4.5, -0.5))
     axR.set_xticks(range(len(FEATURES)))
     axR.set_xticklabels([lbl for _, lbl in FEATURES], rotation=35, ha="right", fontsize=6)
-    axR.tick_params(axis="y", left=False, labelleft=False)
+    axR.set_yticks(rows)
+    axR.set_yticklabels([_two_lines(name) for name in NAMES], fontsize=6, linespacing=1.15)
+    axR.tick_params(axis="y", length=0, pad=3)
     axR.set_ylim(4.5, -0.5)
     for i in range(5):  # raw values printed in each cell (the figure is self-contained)
         for j in range(len(FEATURES)):

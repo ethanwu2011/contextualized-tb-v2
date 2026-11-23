@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from ctb.config import FIGURES_DIR, TABLES_DIR
-from figures.palette import COMPARATOR_LIGHT, PATCH_COLOR, STATUS_COLORS
+from figures.palette import POWERED, STATUS_COLORS, subtype_color
 from figures.panels import panel_label, save_figure
 from figures.style import mm, set_style
 
@@ -59,8 +59,8 @@ def main() -> int:
     axA = fig.add_subplot(gs[0])
     # The two bars printed in the paper. The within-Brazil ceiling and the context-only logistic
     # transfer are in the same table and are reported in the main text.
-    bars = [("TB Portals\n(in-sample)", s["auc_tbp_insample"], COMPARATOR_LIGHT),
-            ("→ Brazil\n(PATCH)", s["auc_transfer_patch"], PATCH_COLOR)]
+    bars = [("TB Portals\n(in-sample)", s["auc_tbp_insample"], "#B0B0B0"),
+            ("→ Brazil\n(PATCH)", s["auc_transfer_patch"], POWERED)]
     y = range(len(bars))[::-1]
     for yi, (lab, val, col) in zip(y, bars, strict=True):
         axA.barh(yi, val, color=col, edgecolor="white", height=0.7)
@@ -78,8 +78,7 @@ def main() -> int:
     import numpy as np
     x = np.arange(len(order))
     w = 0.38
-    # One colour per cohort: the harmonized profiles must not borrow the PATCH subtype colours.
-    cols = [PATCH_COLOR] * len(order)
+    cols = [subtype_color(k) for k in order]
     axB.bar(x - w / 2, [tbp.loc[k, "unfav%"] for k in order], w, color=cols, edgecolor="white",
             lw=0.4, label="TB Portals")
     axB.bar(x + w / 2, [bz.loc[k, "unfav%"] for k in order], w, color=cols, edgecolor="white",

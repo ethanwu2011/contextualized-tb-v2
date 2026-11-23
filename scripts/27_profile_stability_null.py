@@ -139,11 +139,11 @@ def main() -> int:
         import matplotlib.pyplot as plt
         fig, ax = plt.subplots(1, 2, figsize=(8.2, 3.6))
         ax[0].hist(random_cos, bins=20, color="#BDBDBD", alpha=0.9, label="random correspondence")
-        ax[0].hist(matched_cos, bins=20, color="#2E3440", alpha=0.9, label="Hungarian-matched")  # PATCH_COLOR
+        ax[0].hist(matched_cos, bins=20, color="#0072B2", alpha=0.9, label="Hungarian-matched")  # PATCH_COLOR
         ax[0].set_xlabel("cross-seed profile cosine similarity"); ax[0].set_ylabel("count")
         ax[0].legend(frameon=False, fontsize=8); ax[0].set_title("Profile correspondence vs null")
         ax[1].hist(random_dfail, bins=20, color="#BDBDBD", alpha=0.9, label="random")
-        ax[1].hist(matched_dfail, bins=20, color="#2E3440", alpha=0.9, label="matched")
+        ax[1].hist(matched_dfail, bins=20, color="#0072B2", alpha=0.9, label="matched")
         ax[1].set_xlabel("|Δ subtype failure rate| across seeds"); ax[1].set_ylabel("count")
         ax[1].legend(frameon=False, fontsize=8); ax[1].set_title("Failure-rate reproduction")
         fig.tight_layout()

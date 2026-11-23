@@ -245,7 +245,7 @@ def main() -> int:
                 color="#8C8C8C",
                 label="multivariable clinical",
             )
-            a.plot(dc.threshold, dc[pk], color="#2E3440", lw=2, label="PATCH")
+            a.plot(dc.threshold, dc[pk], color="#0072B2", lw=2, label="PATCH")
             a.axvspan(0.10, 0.30, color="#000", alpha=0.04)
             a.set_xlabel("risk threshold")
             a.set_ylabel("net benefit")

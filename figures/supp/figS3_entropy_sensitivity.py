@@ -76,7 +76,8 @@ def main() -> int:
     axB.set_xticklabels([f"{x:g}" for x in lams])
     axB.set_xlabel("entropy weight λ")
     axB.set_ylabel("unfavorable outcome (%)")
-    axB.set_ylim(0, 42)
+    # Fit every point, including the lambda = 0 values of the subtypes that collapse there.
+    axB.set_ylim(0, max(42.0, 1.08 * float(prof.loc[prof["n"] > 0, "unfav%"].max())))
     axB.set_title("The five profiles recur for all λ≥0.3", fontsize=6.5, pad=3)
     axB.legend(loc="center right", fontsize=5.2, handlelength=1.2, labelspacing=0.25,
                borderpad=0.2)

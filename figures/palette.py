@@ -90,12 +90,12 @@ MODALITY_COLORS: dict[str, str] = {
 }
 
 # --- PATCH versus comparators: one colour for PATCH, greys for everything it is compared with ----
-# The five subtype hues above are reserved for subtypes. PATCH is the same ink slate in every model
-# comparison; comparator models are greys; reference lines (treat all / none, chance, perfect
-# calibration, null expectations) are a darker grey drawn dashed or dotted. The one exception is
-# resistance-class-only targeting, drawn in the resistance-modality wine so "resistance" is one colour
-# across Fig. 2c, Fig. 6 and Supplementary Figs. S10 and S14.
-PATCH_COLOR = "#2E3440"
+# PATCH is the same blue in every model comparison (no subtypes appear in those panels); comparator
+# models are greys; reference lines (treat all / none, chance, perfect calibration, null
+# expectations) are a darker grey drawn dashed or dotted. Resistance-class-only targeting is drawn in
+# the resistance-modality wine so "resistance" is one colour across Fig. 2c, Fig. 6 and Supplementary
+# Figs. S10 and S14.
+PATCH_COLOR = "#0072B2"
 COMPARATOR_GREY = "#8C8C8C"
 COMPARATOR_LIGHT = "#BDBDBD"
 REFERENCE_GREY = "#666666"

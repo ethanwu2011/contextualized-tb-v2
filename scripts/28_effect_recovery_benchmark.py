@@ -245,7 +245,7 @@ def main() -> int:
         for name in p1.method.unique():
             s = p1[p1.method == name].sort_values("n_train")
             # PATCH in PATCH_COLOR (figures/palette.py); the comparator in grey.
-            col = "#2E3440" if str(name).startswith("PATCH") else "#8C8C8C"
+            col = "#0072B2" if str(name).startswith("PATCH") else "#8C8C8C"
             ax[0].plot(s.n_train, s["mean"], marker="o", color=col, label=name)
             ax[0].fill_between(s.n_train, s["mean"] - s["std"], s["mean"] + s["std"], color=col,
                                alpha=0.15)
@@ -260,7 +260,7 @@ def main() -> int:
         for k, regime in enumerate(("low-rank", "nonlinear")):
             s = summ[(summ.part == 2) & (summ.regime == regime)].sort_values("mean")
             ax[k + 1].barh(s.method, s["mean"], xerr=s["std"],
-                           color=["#2E3440" if str(m).startswith("PATCH") else "#8C8C8C"
+                           color=["#0072B2" if str(m).startswith("PATCH") else "#8C8C8C"
                                   for m in s.method])
             ax[k + 1].set_xlabel("PEHE"); ax[k + 1].set_title(f"Part 2: CATE recovery\n({regime})")
             ax[k + 1].invert_yaxis()
